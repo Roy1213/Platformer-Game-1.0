@@ -10,6 +10,8 @@ import SpriteKit
 import GameplayKit
 
 class GameViewController: UIViewController {
+    
+    var gameScene : GameScene!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -20,33 +22,41 @@ class GameViewController: UIViewController {
             
             // Get the SKScene from the loaded GKScene
             if let sceneNode = scene.rootNode as! GameScene? {
-                
-                // Copy gameplay related content over to the scene
                 sceneNode.entities = scene.entities
                 sceneNode.graphs = scene.graphs
                 
                 // Set the scale mode to scale to fit the window
                 sceneNode.scaleMode = .aspectFill
-                
+
                 // Present the scene
                 if let view = self.view as! SKView? {
                     view.presentScene(sceneNode)
                     
                     view.ignoresSiblingOrder = true
                     
-                    view.showsFPS = true
-                    view.showsNodeCount = true
+                    view.showsFPS = false
+                    view.showsNodeCount = false
                 }
+                
+                gameScene = sceneNode
             }
         }
     }
-
+    
+    @IBAction func rightAction(_ sender: UIButton) {
+    }
+    
+    @IBAction func jumpAction(_ sender: UIButton) {
+        print(gameScene.jumpSpeed)
+        gameScene.childNode(withName: "player")?.physicsBody?.velocity.dy = CGFloat(gameScene.jumpSpeed)
+    }
+    
+    @IBAction func leftAction(_ sender: UIButton) {
+        
+    }
+    
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        if UIDevice.current.userInterfaceIdiom == .phone {
-            return .allButUpsideDown
-        } else {
-            return .all
-        }
+        return .landscapeLeft
     }
 
     override var prefersStatusBarHidden: Bool {
