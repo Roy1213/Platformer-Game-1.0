@@ -32,6 +32,7 @@
                                 <buttonConfiguration key="configuration" style="filled" title="→"/>
                                 <connections>
                                     <action selector="rightAction:" destination="BV1-FR-VrT" eventType="touchDown" id="HHu-Lr-tij"/>
+                                    <action selector="rightStop:" destination="BV1-FR-VrT" eventType="touchUpInside" id="eTI-A5-DW5"/>
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="nkM-a7-kr0">
@@ -41,6 +42,7 @@
                                 <buttonConfiguration key="configuration" style="filled" title="←"/>
                                 <connections>
                                     <action selector="leftAction:" destination="BV1-FR-VrT" eventType="touchDown" id="zFN-1w-qly"/>
+                                    <action selector="leftStop:" destination="BV1-FR-VrT" eventType="touchUpInside" id="fZM-QK-UWW"/>
                                 </connections>
                             </button>
                         </subviews>

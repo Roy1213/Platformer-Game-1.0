@@ -44,15 +44,26 @@ class GameViewController: UIViewController {
     }
     
     @IBAction func rightAction(_ sender: UIButton) {
+        gameScene.moveRight = true
     }
     
     @IBAction func jumpAction(_ sender: UIButton) {
-        print(gameScene.jumpSpeed)
-        gameScene.childNode(withName: "player")?.physicsBody?.velocity.dy = CGFloat(gameScene.jumpSpeed)
+        if gameScene.jumpNum < gameScene.maxJumps {
+            gameScene.childNode(withName: "player")?.physicsBody?.velocity.dy = CGFloat(gameScene.jumpSpeed)
+            gameScene.jumpNum += 1
+        }
     }
     
     @IBAction func leftAction(_ sender: UIButton) {
-        
+        gameScene.moveLeft = true
+    }
+    
+    @IBAction func rightStop(_ sender: UIButton) {
+        gameScene.moveRight = false
+    }
+    
+    @IBAction func leftStop(_ sender: UIButton) {
+        gameScene.moveLeft = false
     }
     
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
