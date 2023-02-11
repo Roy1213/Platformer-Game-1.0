@@ -12,30 +12,45 @@ import UIKit
 class GameScene: SKScene, SKPhysicsContactDelegate {
     
     var entities = [GKEntity]()
-    var graphs = [String : GKGraph]()
+    var graphs   = [String : GKGraph]()
     
     var moveRight = false
-    var moveLeft = false
-    var jumpNum = 0
-    var maxJumps = 2
+    var moveLeft  = false
+    var jumpNum   = 0
+    var maxJumps  = 2
     
     var player : SKSpriteNode!
     var ground : SKSpriteNode!
-    var coin : SKSpriteNode!
+    var coin   : SKSpriteNode!
     var enemy1 : SKSpriteNode!
     
-    var jumpSpeed = 600
-    var runMaxSpeed = 325
+    let playerCategory : UInt32 = 0x1 << 0
+    let groundCategory : UInt32 = 0x1 << 1
+    let coinCategory   : UInt32 = 0x1 << 2
+    let enemy1Category : UInt32 = 0x1 << 3
+    
+    var jumpSpeed       = 600
+    var runMaxSpeed     = 325
     var runAcceleration = 1000
     
     override func sceneDidLoad() {
+        self.physicsWorld.contactDelegate = self
         UIDevice.current.setValue(UIDeviceOrientation.landscapeLeft, forKey: "orientation")
         player = self.childNode(withName: "player") as? SKSpriteNode
         ground = self.childNode(withName: "ground") as? SKSpriteNode
-        player.physicsBody?.categoryBitMask = 1
-        ground.physicsBody?.categoryBitMask = 2
-        player.physicsBody?.contactTestBitMask = 2
-        ground.physicsBody?.contactTestBitMask = player.physicsBody?.contactTestBitMask ?? 0
+        if let enemy1 = self.childNode(withName: "enemy1") as? SKSpriteNode {
+            self.enemy1 = enemy1
+        }
+        else {
+            print("error")
+            return }
+        
+        player.physicsBody?.categoryBitMask    = playerCategory
+        player.physicsBody?.contactTestBitMask = groundCategory | enemy1Category
+        ground.physicsBody?.categoryBitMask    = groundCategory
+        ground.physicsBody?.contactTestBitMask = playerCategory
+        enemy1.physicsBody?.categoryBitMask    = enemy1Category
+        enemy1.physicsBody?.contactTestBitMask = playerCategory
     }
     
     
@@ -51,7 +66,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func didBegin(_ contact: SKPhysicsContact) {
-        print("test")
         var player : SKSpriteNode!
         var ground : SKSpriteNode!
         if contact.bodyA.categoryBitMask == 1 && contact.bodyB.categoryBitMask == 2 {
@@ -62,9 +76,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             player = contact.bodyB.node as? SKSpriteNode
             ground = contact.bodyA.node as? SKSpriteNode
         }
-        
-        print(player != nil)
-        print(ground != nil)
         if player != nil && ground != nil {
             jumpNum = 0
         }
