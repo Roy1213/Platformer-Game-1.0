@@ -49,7 +49,7 @@ class GameViewController: UIViewController {
     
     @IBAction func jumpAction(_ sender: UIButton) {
         if gameScene.jumpNum < gameScene.maxJumps {
-            gameScene.childNode(withName: "player")?.physicsBody?.velocity.dy = CGFloat(gameScene.jumpSpeed)
+            gameScene.player?.physicsBody?.velocity.dy = CGFloat(gameScene.jumpSpeed)
             gameScene.jumpNum += 1
         }
     }
