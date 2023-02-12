@@ -66,6 +66,17 @@ class GameViewController: UIViewController {
         gameScene.moveLeft = false
     }
     
+    @IBAction func inspectAction(_ sender: UIButton) {
+        if gameScene.inspectMode == false {
+            gameScene.inspectInitialPositionX = Int(gameScene.cam.position.x)
+            gameScene.inspectInitialPositionY = Int(gameScene.cam.position.y)
+            gameScene.inspectMode = true
+        }
+        else {
+            gameScene.inspectMode = false
+        }
+    }
+    
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
         return .landscapeLeft
     }

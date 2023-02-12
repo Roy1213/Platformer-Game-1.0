@@ -21,6 +21,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     var player : SKShapeNode!
     var cam : SKCameraNode!
+    
+    var camInitiateFollowX = 300
+    var camInitiateFollowY = 150
 //    var ground : SKSpriteNode!
 //    var coin   : SKSpriteNode!
 //    var enemy1 : SKSpriteNode!
@@ -32,21 +35,21 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let enemy2Category : UInt32 = 0x1 << 4
     let enemy3Category : UInt32 = 0x1 << 5
     
-    var jumpSpeed       = 600
-    var runMaxSpeed     = 325
-    var runAcceleration = 1000
+    let jumpSpeed       = 700
+    let runMaxSpeed     = 325
+    let runAcceleration = 1000
     
-    var playerWidth         = 100
-    var playerHeight        = 100
-    var coinRadius          = 50
-    var enemy1Widths        = [30, 50]
-    var enemy1Heights       = [30, 50]
-    var groundWidths        = [4000]
-    var groundHeights       = [100]
-    var wallWidths          = [Int]()
-    var wallHeights         = [Int]()
-    var jumpableWallWidths  = [Int]()
-    var jumpableWallHeights = [Int]()
+    let playerWidth         = 100
+    let playerHeight        = 100
+    let coinRadius          = 50
+    let enemy1Widths        = [30, 50]
+    let enemy1Heights       = [30, 50]
+    let groundWidths        = [4000]
+    let groundHeights       = [100]
+    let wallWidths          = [Int]()
+    let wallHeights         = [Int]()
+    let jumpableWallWidths  = [Int]()
+    let jumpableWallHeights = [Int]()
     
     let coinPositions   : [[Int]] = [[200, 200],
                                      [500, 300],
@@ -72,6 +75,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var walls         = [SKShapeNode]()
     var jumpableWalls = [SKShapeNode]()
     
+    var inspectMode = false
+    var inspectInitialPositionX = 0
+    var inspectInitialPositionY = 0
+    var lastTouchX : CGFloat!
+    var lastTouchY : CGFloat!
+    
+    
+    
     
     override func sceneDidLoad() {
         self.physicsWorld.contactDelegate = self
@@ -95,6 +106,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         player.position = CGPoint(x: 300, y: 300)
         self.addChild(player)
+        
+        cam.position.x = player.position.x
+        cam.position.y = player.position.y
         
         for i in 0..<coinPositions.count {
             let coin = SKShapeNode(circleOfRadius: CGFloat(coinRadius))
@@ -140,9 +154,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         
     }
-    
-    
    
+    
+    
     override func update(_ currentTime: TimeInterval) {
         if (moveRight || moveLeft) && abs(player?.physicsBody?.velocity.dx ?? 0) < CGFloat(Double(runMaxSpeed)) {
             var multiplier = -1
@@ -151,14 +165,27 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             }
             player?.physicsBody?.applyForce(CGVector(dx: multiplier * runAcceleration, dy: 0))
         }
-        
-        cam.position.x = player.position.x
-        cam.position.y = player.position.y
+        if !inspectMode {
+            if abs(player.position.x - cam.position.x) >= CGFloat(camInitiateFollowX) {
+                if player.position.x > cam.position.x {
+                    cam.position.x += player.position.x - cam.position.x - CGFloat(camInitiateFollowX)
+                }
+                else {
+                    cam.position.x += player.position.x - cam.position.x + CGFloat(camInitiateFollowX)
+                }
+            }
+            if abs(player.position.y - cam.position.y) >= CGFloat(camInitiateFollowY) {
+                if player.position.y > cam.position.y {
+                    cam.position.y += player.position.y - cam.position.y - CGFloat(camInitiateFollowY)
+                }
+                else {
+                    cam.position.y += player.position.y - cam.position.y + CGFloat(camInitiateFollowY)
+                }
+            }
+        }
     }
     
     func didBegin(_ contact: SKPhysicsContact) {
-        print(contact.bodyA.categoryBitMask)
-        print(contact.bodyB.categoryBitMask)
         var player : SKShapeNode!
         var ground : SKShapeNode!
         if contact.bodyA.categoryBitMask == playerCategory && contact.bodyB.categoryBitMask == groundCategory {
@@ -171,6 +198,43 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
         if player != nil && ground != nil {
             jumpNum = 0
+        }
+    }
+    
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        for touch in touches {
+            //print(lastTouch.location(in: self).y)
+            //lastTouch = touch.copy() as? UITouch
+            lastTouchX = touch.location(in: self).x
+            lastTouchY = touch.location(in: self).y
+            print("test")
+            //print(touch.location(in: self).y)
+        }
+    }
+    
+    
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if inspectMode {
+            for touch in touches {
+                cam.position.x += lastTouchX - touch.location(in: self).x
+                cam.position.y += lastTouchY - touch.location(in: self).y
+                print("\(cam.position.x), \(cam.position.y)")
+                //print(lastTouch.location(in: self).x)
+                print(touch.location(in: self).x)
+                
+//                print(lastTouch.location(in: self).y)
+//                print(touch.location(in: self).y)
+//                cam.position.x -= touch.location(in: self).x - lastTouch.location(in: self).x
+//                cam.position.y -= touch.location(in: self).y - lastTouch.location(in: self).y
+//                //print("\(cam.position.x), \(cam.position.y)")
+//                lastTouch = touch
+//                print(lastTouch.location(in: self).y)
+//                print(touch.location(in: self).y)
+//                print("_____________________________")
+            }
+//            for touch in touches {
+//                lastTouch = touch
+//            }
         }
     }
 }
