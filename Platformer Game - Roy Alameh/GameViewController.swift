@@ -45,18 +45,24 @@ class GameViewController: UIViewController {
     }
     
     @IBAction func rightAction(_ sender: UIButton) {
-        gameScene.moveRight = true
+        if !gameScene.inAnimation {
+            gameScene.moveRight = true
+        }
     }
     
     @IBAction func jumpAction(_ sender: UIButton) {
-        if gameScene.jumpNum < gameScene.maxJumps {
-            gameScene.player?.physicsBody?.velocity.dy = CGFloat(gameScene.jumpSpeed)
-            gameScene.jumpNum += 1
+        if !gameScene.inAnimation {
+            if gameScene.jumpNum < gameScene.maxJumps {
+                gameScene.player?.physicsBody?.velocity.dy = CGFloat(gameScene.jumpSpeed)
+                gameScene.jumpNum += 1
+            }
         }
     }
     
     @IBAction func leftAction(_ sender: UIButton) {
-        gameScene.moveLeft = true
+        if !gameScene.inAnimation {
+            gameScene.moveLeft = true
+        }
     }
     
     @IBAction func rightStop(_ sender: UIButton) {

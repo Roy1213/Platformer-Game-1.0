@@ -25,6 +25,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var camInitiateFollowX = 300
     var camInitiateFollowY = 150
     
+    var playerStartX = 300
+    var playerStartY = 300
+    
     let playerCategory         : UInt32 = 0x1 << 0
     let groundCategory         : UInt32 = 0x1 << 1
     let coinCategory           : UInt32 = 0x1 << 2
@@ -79,6 +82,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var lastTouchX : CGFloat!
     var lastTouchY : CGFloat!
     
+    var lives = 2
+    var inAnimation = false
+    var initialPositionYAnimation : CGFloat = 0
+    
     
     
     override func sceneDidLoad() {
@@ -88,23 +95,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         cam = SKCameraNode()
         self.camera = cam
         
-        player = SKShapeNode(rectOf: CGSize(width: CGFloat(playerWidth), height: CGFloat(playerHeight)))
-        player.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: playerWidth, height: playerHeight))
-        
-        player.physicsBody?.affectedByGravity  = true
-        player.physicsBody?.isDynamic          = true
-        player.physicsBody?.pinned             = false
-        player.physicsBody?.allowsRotation     = false
-        player.physicsBody?.restitution        = 0
-        player.physicsBody?.linearDamping      = 0
-        player.physicsBody?.friction           = 1
-        
-        player.physicsBody?.categoryBitMask    = playerCategory
-        player.physicsBody?.collisionBitMask   = groundCategory | wallCategory | jumpableWallCategory
-        player.physicsBody?.contactTestBitMask = groundCategory | enemy1Category | coinCategory
-        
-        player.position = CGPoint(x: 300, y: 300)
-        self.addChild(player)
+        initPlayer()
         
         cam.position.x = player.position.x
         cam.position.y = player.position.y
@@ -200,17 +191,38 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     
+    func initPlayer() {
+        player = SKShapeNode(rectOf: CGSize(width: CGFloat(playerWidth), height: CGFloat(playerHeight)))
+        player.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: playerWidth, height: playerHeight))
+        
+        player.physicsBody?.affectedByGravity  = true
+        player.physicsBody?.isDynamic          = true
+        player.physicsBody?.pinned             = false
+        player.physicsBody?.allowsRotation     = false
+        player.physicsBody?.restitution        = 0
+        player.physicsBody?.linearDamping      = 0
+        player.physicsBody?.friction           = 1
+        player.physicsBody?.angularVelocity    = 0
+        
+        player.physicsBody?.categoryBitMask    = playerCategory
+        player.physicsBody?.collisionBitMask   = groundCategory | wallCategory | jumpableWallCategory
+        player.physicsBody?.contactTestBitMask = groundCategory | enemy1Category | coinCategory
+        
+        player.position = CGPoint(x: playerStartX , y: playerStartY)
+        self.addChild(player)
+    }
+    
     
     
     override func update(_ currentTime: TimeInterval) {
-        if (moveRight || moveLeft) && abs(player?.physicsBody?.velocity.dx ?? 0) < CGFloat(Double(runMaxSpeed)) {
+        if (moveRight || moveLeft) && abs(player?.physicsBody?.velocity.dx ?? 0) < CGFloat(Double(runMaxSpeed)) && !inAnimation {
             var multiplier = -1
             if moveRight {
                 multiplier = 1
             }
             player?.physicsBody?.applyForce(CGVector(dx: multiplier * runAcceleration, dy: 0))
         }
-        if !inspectMode {
+        if !inspectMode && !inAnimation{
             if abs(player.position.x - cam.position.x) >= CGFloat(camInitiateFollowX) {
                 if player.position.x > cam.position.x {
                     cam.position.x += player.position.x - cam.position.x - CGFloat(camInitiateFollowX)
@@ -226,6 +238,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 else {
                     cam.position.y += player.position.y - cam.position.y + CGFloat(camInitiateFollowY)
                 }
+            }
+        }
+        else if inAnimation {
+            if (player.position.y <= initialPositionYAnimation - CGFloat(2000)) {
+                initPlayer()
+                inAnimation = false
             }
         }
     }
@@ -251,14 +269,25 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             enemy1 = contact.bodyB.node as? SKShapeNode
             wall = contact.bodyA.node as? SKShapeNode
         }
+        else if contact.bodyA.categoryBitMask == playerCategory && contact.bodyB.categoryBitMask == enemy1Category {
+            player = contact.bodyA.node as? SKShapeNode
+            enemy1 = contact.bodyB.node as? SKShapeNode
+        }
+        else if contact.bodyA.categoryBitMask == enemy1Category && contact.bodyB.categoryBitMask == playerCategory {
+            player = contact.bodyB.node as? SKShapeNode
+            enemy1 = contact.bodyA.node as? SKShapeNode
+        }
+        
         
         
         if player != nil && ground != nil {
             jumpNum = 0
         }
-        
-        if enemy1 != nil && wall != nil {
+        else if enemy1 != nil && wall != nil {
             enemy1.physicsBody?.velocity.dx *= -1
+        }
+        else if player != nil && enemy1 != nil {
+            dieAnimation()
         }
     }
     
@@ -277,5 +306,17 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 cam.position.y += lastTouchY - touch.location(in: self).y
             }
         }
+    }
+    
+    func dieAnimation() {
+        inAnimation = true
+        initialPositionYAnimation = player.position.y
+        player.physicsBody?.collisionBitMask   = 0
+        player.physicsBody?.contactTestBitMask = 0
+        player.physicsBody?.categoryBitMask    = 0
+        player.physicsBody?.angularDamping     = 0
+        player.physicsBody?.velocity.dy        = 700
+        player.physicsBody?.velocity.dx        = 0
+        player.physicsBody?.angularVelocity    = 100
     }
 }
