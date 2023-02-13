@@ -51,13 +51,16 @@
                                 <state key="normal" title="Button"/>
                                 <buttonConfiguration key="configuration" style="filled" title="Inspect"/>
                                 <connections>
-                                    <action selector="inspectAction:" destination="BV1-FR-VrT" eventType="touchDown" id="FRY-KY-1oQ"/>
+                                    <action selector="inspectReleased:" destination="BV1-FR-VrT" eventType="touchUpInside" id="93Q-MB-Re6"/>
                                 </connections>
                             </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="4qk-I5-YsI"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                     </view>
+                    <connections>
+                        <outlet property="inspectOutlet" destination="ycu-Xa-CgO" id="i2N-dU-dWP"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="SZV-WD-TEh" sceneMemberID="firstResponder"/>
             </objects>

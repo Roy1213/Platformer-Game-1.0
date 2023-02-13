@@ -12,7 +12,8 @@ import GameplayKit
 class GameViewController: UIViewController {
     
     var gameScene : GameScene!
-
+    @IBOutlet weak var inspectOutlet: UIButton!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -66,14 +67,17 @@ class GameViewController: UIViewController {
         gameScene.moveLeft = false
     }
     
-    @IBAction func inspectAction(_ sender: UIButton) {
+    
+    @IBAction func inspectReleased(_ sender: UIButton) {
         if gameScene.inspectMode == false {
             gameScene.inspectInitialPositionX = Int(gameScene.cam.position.x)
             gameScene.inspectInitialPositionY = Int(gameScene.cam.position.y)
             gameScene.inspectMode = true
+            inspectOutlet.tintColor = UIColor.green
         }
         else {
             gameScene.inspectMode = false
+            inspectOutlet.tintColor = UIColor.systemBlue
         }
     }
     

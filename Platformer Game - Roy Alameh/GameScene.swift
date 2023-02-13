@@ -24,9 +24,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     var camInitiateFollowX = 300
     var camInitiateFollowY = 150
-//    var ground : SKSpriteNode!
-//    var coin   : SKSpriteNode!
-//    var enemy1 : SKSpriteNode!
     
     let playerCategory : UInt32 = 0x1 << 0
     let groundCategory : UInt32 = 0x1 << 1
@@ -36,20 +33,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let enemy3Category : UInt32 = 0x1 << 5
     
     let jumpSpeed       = 700
-    let runMaxSpeed     = 325
-    let runAcceleration = 1000
+    let runMaxSpeed     = 400
+    let runAcceleration = 3000
     
     let playerWidth         = 100
     let playerHeight        = 100
     let coinRadius          = 50
-    let enemy1Widths        = [30, 50]
-    let enemy1Heights       = [30, 50]
-    let groundWidths        = [4000]
-    let groundHeights       = [100]
-    let wallWidths          = [Int]()
-    let wallHeights         = [Int]()
-    let jumpableWallWidths  = [Int]()
-    let jumpableWallHeights = [Int]()
+    let enemy1Size          = [30, 50]
+    let groundSizes         = [[4000, 100]]
+    let wallSizes           = [[20, 300]]
+    let jumpableWallSizes   = [[20, 400]]
     
     let coinPositions   : [[Int]] = [[200, 200],
                                      [500, 300],
@@ -80,7 +73,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var inspectInitialPositionY = 0
     var lastTouchX : CGFloat!
     var lastTouchY : CGFloat!
-    
     
     
     
@@ -131,8 +123,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
         
         for i in 0..<groundPositions.count {
-            let ground = SKShapeNode(rectOf: CGSize(width: CGFloat(groundWidths[i]), height: CGFloat(groundHeights[i])))
-            ground.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: CGFloat(groundWidths[i]), height: CGFloat(groundHeights[i])))
+            let ground = SKShapeNode(rectOf: CGSize(width: CGFloat(groundSizes[i][0]), height: CGFloat(groundSizes[i][1])))
+            ground.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: CGFloat(groundSizes[i][0]), height: CGFloat(groundSizes[i][1])))
             
             ground.physicsBody?.affectedByGravity  = false
             ground.physicsBody?.isDynamic          = false
@@ -150,9 +142,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             coins.append(ground)
             self.addChild(ground)
         }
-        
-        
-        
     }
    
     
@@ -203,12 +192,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         for touch in touches {
-            //print(lastTouch.location(in: self).y)
-            //lastTouch = touch.copy() as? UITouch
             lastTouchX = touch.location(in: self).x
             lastTouchY = touch.location(in: self).y
-            print("test")
-            //print(touch.location(in: self).y)
         }
     }
     
@@ -218,23 +203,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             for touch in touches {
                 cam.position.x += lastTouchX - touch.location(in: self).x
                 cam.position.y += lastTouchY - touch.location(in: self).y
-                print("\(cam.position.x), \(cam.position.y)")
-                //print(lastTouch.location(in: self).x)
-                print(touch.location(in: self).x)
-                
-//                print(lastTouch.location(in: self).y)
-//                print(touch.location(in: self).y)
-//                cam.position.x -= touch.location(in: self).x - lastTouch.location(in: self).x
-//                cam.position.y -= touch.location(in: self).y - lastTouch.location(in: self).y
-//                //print("\(cam.position.x), \(cam.position.y)")
-//                lastTouch = touch
-//                print(lastTouch.location(in: self).y)
-//                print(touch.location(in: self).y)
-//                print("_____________________________")
             }
-//            for touch in touches {
-//                lastTouch = touch
-//            }
         }
     }
 }
