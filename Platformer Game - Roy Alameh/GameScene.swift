@@ -25,24 +25,31 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var camInitiateFollowX = 300
     var camInitiateFollowY = 150
     
-    let playerCategory : UInt32 = 0x1 << 0
-    let groundCategory : UInt32 = 0x1 << 1
-    let coinCategory   : UInt32 = 0x1 << 2
-    let enemy1Category : UInt32 = 0x1 << 3
-    let enemy2Category : UInt32 = 0x1 << 4
-    let enemy3Category : UInt32 = 0x1 << 5
+    let playerCategory         : UInt32 = 0x1 << 0
+    let groundCategory         : UInt32 = 0x1 << 1
+    let coinCategory           : UInt32 = 0x1 << 2
+    let enemy1Category         : UInt32 = 0x1 << 3
+    let enemy2Category         : UInt32 = 0x1 << 4
+    let enemy3Category         : UInt32 = 0x1 << 5
+    let wallCategory           : UInt32 = 0x1 << 6
+    let jumpableWallCategory   : UInt32 = 0x1 << 7
     
     let jumpSpeed       = 700
     let runMaxSpeed     = 400
     let runAcceleration = 3000
     
+    let enemy1Speed = 300
+    
     let playerWidth         = 100
     let playerHeight        = 100
-    let coinRadius          = 50
+    let coinRadius          = 15
     let enemy1Size          = [30, 50]
     let groundSizes         = [[4000, 100]]
-    let wallSizes           = [[20, 300]]
-    let jumpableWallSizes   = [[20, 400]]
+    let wallSizes           = [[20, 300],
+                               [20, 300]]
+    
+    let jumpableWallSizes   = [[20, 400],
+                               [20, 400]]
     
     let coinPositions   : [[Int]] = [[200, 200],
                                      [500, 300],
@@ -50,17 +57,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                                      [1000, 600],
                                      [1100, 700]]
     
-    let enemy1Positions : [[Int]] = [[200, 400],
-                                     [600, 400],
-                                     [200, 400],
-                                     [1300, 600],
-                                     [1500, 800]]
+    let enemy1Positions : [[Int]] = [[750, 300]]
     
     let groundPositions       : [[Int]] = [[2000, 50]]
     
-    let wallPositions         : [[Int]] = [[Int]]()
+    let wallPositions         : [[Int]] = [[500, 100],
+                                           [1000, 100]]
     
-    let jumpableWallPositions : [[Int]] = [[Int]]()
+    let jumpableWallPositions : [[Int]] = [[1500, 100],
+                                           [2000, 100]]
     
     var coins         = [SKShapeNode]()
     var enemy1s       = [SKShapeNode]()
@@ -91,9 +96,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         player.physicsBody?.pinned             = false
         player.physicsBody?.allowsRotation     = false
         player.physicsBody?.restitution        = 0
+        player.physicsBody?.linearDamping      = 0
+        player.physicsBody?.friction           = 1
         
         player.physicsBody?.categoryBitMask    = playerCategory
-        player.physicsBody?.collisionBitMask   = groundCategory
+        player.physicsBody?.collisionBitMask   = groundCategory | wallCategory | jumpableWallCategory
         player.physicsBody?.contactTestBitMask = groundCategory | enemy1Category | coinCategory
         
         player.position = CGPoint(x: 300, y: 300)
@@ -131,6 +138,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             ground.physicsBody?.pinned             = true
             ground.physicsBody?.allowsRotation     = false
             ground.physicsBody?.restitution        = 0
+            ground.physicsBody?.friction           = 0.2
             
             ground.physicsBody?.categoryBitMask    = groundCategory
             ground.physicsBody?.collisionBitMask   = playerCategory
@@ -139,11 +147,59 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             ground.position.x = CGFloat(Double(groundPositions[i][0]))
             ground.position.y = CGFloat(Double(groundPositions[i][1]))
             
-            coins.append(ground)
+            grounds.append(ground)
             self.addChild(ground)
         }
+        
+        for i in 0..<enemy1Positions.count {
+            let enemy1 = SKShapeNode(rectOf: CGSize(width: CGFloat(enemy1Size[0]), height: CGFloat(enemy1Size[1])))
+            enemy1.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: CGFloat(enemy1Size[0]), height: CGFloat(enemy1Size[1])))
+            
+            enemy1.physicsBody?.affectedByGravity  = true
+            enemy1.physicsBody?.isDynamic          = true
+            enemy1.physicsBody?.pinned             = false
+            enemy1.physicsBody?.allowsRotation     = false
+            enemy1.physicsBody?.restitution        = 0
+            enemy1.physicsBody?.friction           = 0
+            enemy1.physicsBody?.angularDamping     = 0
+            enemy1.physicsBody?.linearDamping      = 0
+            
+            enemy1.physicsBody?.categoryBitMask    = enemy1Category
+            enemy1.physicsBody?.collisionBitMask   = groundCategory
+            enemy1.physicsBody?.contactTestBitMask = playerCategory | wallCategory | jumpableWallCategory
+            
+            enemy1.position.x = CGFloat(Double(enemy1Positions[i][0]))
+            enemy1.position.y = CGFloat(Double(enemy1Positions[i][1]))
+            
+            enemy1s.append(enemy1)
+            self.addChild(enemy1)
+            
+            enemy1.physicsBody?.velocity.dx = CGFloat(enemy1Speed)
+        }
+        
+        for i in 0..<wallPositions.count {
+            let wall = SKShapeNode(rectOf: CGSize(width: CGFloat(wallSizes[i][0]), height: CGFloat(wallSizes[i][1])))
+            wall.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: CGFloat(wallSizes[i][0]), height: CGFloat(wallSizes[i][1])))
+            
+            wall.physicsBody?.affectedByGravity  = false
+            wall.physicsBody?.isDynamic          = false
+            wall.physicsBody?.pinned             = true
+            wall.physicsBody?.allowsRotation     = false
+            wall.physicsBody?.restitution        = 0
+            wall.physicsBody?.friction           = 0
+            
+            wall.physicsBody?.categoryBitMask    = wallCategory
+            wall.physicsBody?.collisionBitMask   = playerCategory
+            wall.physicsBody?.contactTestBitMask = playerCategory | enemy1Category
+            
+            wall.position.x = CGFloat(Double(wallPositions[i][0]))
+            wall.position.y = CGFloat(Double(wallPositions[i][1]))
+            
+            walls.append(wall)
+            self.addChild(wall)
+        }
     }
-   
+    
     
     
     override func update(_ currentTime: TimeInterval) {
@@ -177,6 +233,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     func didBegin(_ contact: SKPhysicsContact) {
         var player : SKShapeNode!
         var ground : SKShapeNode!
+        var enemy1 : SKShapeNode!
+        var wall   : SKShapeNode!
         if contact.bodyA.categoryBitMask == playerCategory && contact.bodyB.categoryBitMask == groundCategory {
             player = contact.bodyA.node as? SKShapeNode
             ground = contact.bodyB.node as? SKShapeNode
@@ -185,8 +243,22 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             player = contact.bodyB.node as? SKShapeNode
             ground = contact.bodyA.node as? SKShapeNode
         }
+        else if contact.bodyA.categoryBitMask == enemy1Category && contact.bodyB.categoryBitMask == wallCategory {
+            enemy1 = contact.bodyA.node as? SKShapeNode
+            wall = contact.bodyB.node as? SKShapeNode
+        }
+        else if contact.bodyA.categoryBitMask == wallCategory && contact.bodyB.categoryBitMask == enemy1Category {
+            enemy1 = contact.bodyB.node as? SKShapeNode
+            wall = contact.bodyA.node as? SKShapeNode
+        }
+        
+        
         if player != nil && ground != nil {
             jumpNum = 0
+        }
+        
+        if enemy1 != nil && wall != nil {
+            enemy1.physicsBody?.velocity.dx *= -1
         }
     }
     
