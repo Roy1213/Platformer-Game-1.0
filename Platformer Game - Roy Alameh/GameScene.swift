@@ -86,6 +86,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var inAnimation = false
     var initialPositionYAnimation : CGFloat = 0
     
+    var totalCoins = 0
+    var coinsLabel : SKLabelNode!
+    
     
     
     override func sceneDidLoad() {
@@ -99,6 +102,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         cam.position.x = player.position.x
         cam.position.y = player.position.y
+        
+        coinsLabel = SKLabelNode()
+        coinsLabel.text = "Coins: \(totalCoins)"
+        self.addChild(coinsLabel)
         
         for i in 0..<coinPositions.count {
             let coin = SKShapeNode(circleOfRadius: CGFloat(coinRadius))
@@ -246,6 +253,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 inAnimation = false
             }
         }
+        
+        if !inAnimation {
+            coinsLabel.position.x = cam.position.x - 500
+            coinsLabel.position.y = cam.position.y + 250
+        }
     }
     
     func didBegin(_ contact: SKPhysicsContact) {
@@ -253,6 +265,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         var ground : SKShapeNode!
         var enemy1 : SKShapeNode!
         var wall   : SKShapeNode!
+        var coin   : SKShapeNode!
         if contact.bodyA.categoryBitMask == playerCategory && contact.bodyB.categoryBitMask == groundCategory {
             player = contact.bodyA.node as? SKShapeNode
             ground = contact.bodyB.node as? SKShapeNode
@@ -277,6 +290,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             player = contact.bodyB.node as? SKShapeNode
             enemy1 = contact.bodyA.node as? SKShapeNode
         }
+        else if contact.bodyA.categoryBitMask == playerCategory && contact.bodyB.categoryBitMask == coinCategory {
+            player = contact.bodyA.node as? SKShapeNode
+            coin = contact.bodyB.node as? SKShapeNode
+        }
+        else if contact.bodyA.categoryBitMask == coinCategory && contact.bodyB.categoryBitMask == playerCategory {
+            player = contact.bodyB.node as? SKShapeNode
+            coin = contact.bodyA.node as? SKShapeNode
+        }
+        
         
         
         
@@ -288,6 +310,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
         else if player != nil && enemy1 != nil {
             dieAnimation()
+        }
+        else if coin != nil && player != nil {
+            totalCoins += 1
+            coinsLabel.text = "Coins: \(totalCoins)"
+            coin.removeFromParent()
         }
     }
     
