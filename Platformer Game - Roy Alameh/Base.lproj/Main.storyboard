@@ -17,7 +17,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="1PE-ml-wER">
-                                <rect key="frame" x="107" y="264" width="51" height="48"/>
+                                <rect key="frame" x="107" y="250" width="58" height="48"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <state key="normal" title="Button"/>
                                 <buttonConfiguration key="configuration" style="filled" title="↑"/>
@@ -25,24 +25,23 @@
                                     <action selector="jumpAction:" destination="BV1-FR-VrT" eventType="touchDown" id="4o8-wZ-gFi"/>
                                 </connections>
                             </button>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="dul-fE-CcY">
+                                <rect key="frame" x="667" y="303" width="155" height="80"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="filled" title="↑"/>
+                                <connections>
+                                    <action selector="jumpAction:" destination="BV1-FR-VrT" eventType="touchDown" id="061-6f-keF"/>
+                                </connections>
+                            </button>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ldi-mL-Xtw">
-                                <rect key="frame" x="166" y="316" width="44" height="43"/>
+                                <rect key="frame" x="149" y="316" width="91" height="43"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <state key="normal" title="Button"/>
                                 <buttonConfiguration key="configuration" style="filled" title="→"/>
                                 <connections>
                                     <action selector="rightAction:" destination="BV1-FR-VrT" eventType="touchDown" id="HHu-Lr-tij"/>
                                     <action selector="rightStop:" destination="BV1-FR-VrT" eventType="touchUpInside" id="eTI-A5-DW5"/>
-                                </connections>
-                            </button>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="nkM-a7-kr0">
-                                <rect key="frame" x="57" y="316" width="46" height="43"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="filled" title="←"/>
-                                <connections>
-                                    <action selector="leftAction:" destination="BV1-FR-VrT" eventType="touchDown" id="zFN-1w-qly"/>
-                                    <action selector="leftStop:" destination="BV1-FR-VrT" eventType="touchUpInside" id="fZM-QK-UWW"/>
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ycu-Xa-CgO">
@@ -52,6 +51,16 @@
                                 <buttonConfiguration key="configuration" style="filled" title="Inspect"/>
                                 <connections>
                                     <action selector="inspectReleased:" destination="BV1-FR-VrT" eventType="touchUpInside" id="93Q-MB-Re6"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="nkM-a7-kr0">
+                                <rect key="frame" x="39" y="316" width="83" height="43"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="filled" title="←"/>
+                                <connections>
+                                    <action selector="leftAction:" destination="BV1-FR-VrT" eventType="touchDown" id="zFN-1w-qly"/>
+                                    <action selector="leftStop:" destination="BV1-FR-VrT" eventType="touchUpInside" id="fZM-QK-UWW"/>
                                 </connections>
                             </button>
                         </subviews>
@@ -64,7 +73,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="SZV-WD-TEh" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-123" y="-28"/>
+            <point key="canvasLocation" x="-123.23943661971832" y="-28.244274809160306"/>
         </scene>
     </scenes>
     <resources>

@@ -47,7 +47,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let playerHeight        = 100
     let coinRadius          = 15
     let enemy1Size          = [30, 50]
-    let groundSizes         = [[4000, 100]]
+    let groundSizes         = [[4000, 100],
+                               [20, 50]]
     let wallSizes           = [[20, 300],
                                [20, 300]]
     
@@ -63,7 +64,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     let enemy1Positions : [[Int]] = [[750, 300]]
     
-    let groundPositions       : [[Int]] = [[2000, 50]]
+    let groundPositions       : [[Int]] = [[2000, 50],
+                                           [1500, 600]]
     
     let wallPositions         : [[Int]] = [[500, 100],
                                            [1000, 100]]
@@ -242,15 +244,18 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         player.physicsBody?.restitution        = 0
         player.physicsBody?.linearDamping      = 0.5
         player.physicsBody?.friction           = 1
-        player.physicsBody?.angularVelocity    = 0
+        
+        if fromBegining {
+            player.physicsBody?.angularVelocity    = 0
+            player.zRotation                       = 0
+            player.physicsBody?.velocity.dx        = 0
+            player.physicsBody?.velocity.dy        = 0
+            player.position = CGPoint(x: playerStartX , y: playerStartY)
+        }
         
         player.physicsBody?.categoryBitMask    = playerCategory
         player.physicsBody?.collisionBitMask   = groundCategory | wallCategory | jumpableWallCategory
         player.physicsBody?.contactTestBitMask = groundCategory | enemy1Category | coinCategory
-        
-        if fromBegining {
-            player.position = CGPoint(x: playerStartX , y: playerStartY)
-        }
         
         if firstInit {
             self.addChild(player)
@@ -261,14 +266,17 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     
     override func update(_ currentTime: TimeInterval) {
-        if (moveRight || moveLeft) && abs(player?.physicsBody?.velocity.dx ?? 0) < CGFloat(Double(runMaxSpeed)) && !inAnimation {
-            var multiplier = -1
-            if moveRight {
+        if (moveRight || moveLeft) && !inAnimation {
+            var multiplier = 0
+            if moveRight && (player.physicsBody?.velocity.dx)! < CGFloat(runMaxSpeed) {
                 multiplier = 1
+            }
+            else if moveLeft && (player.physicsBody?.velocity.dx)! > CGFloat(-runMaxSpeed) {
+                multiplier = -1
             }
             player?.physicsBody?.applyForce(CGVector(dx: multiplier * runAcceleration, dy: 0))
         }
-        if !inspectMode && !inAnimation{
+        if !inspectMode && (!inAnimation || (jumpableWallAnimation != nil && jumpableWallAnimation)) {
             if abs(player.position.x - cam.position.x) >= CGFloat(camInitiateFollowX) {
                 if player.position.x > cam.position.x {
                     cam.position.x += player.position.x - cam.position.x - CGFloat(camInitiateFollowX)
@@ -301,6 +309,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         if ((player.physicsBody?.velocity.dx)! > 5 || (player.physicsBody?.velocity.dx)! < -5) {
             xVelocity = player.physicsBody?.velocity.dx
+        }
+        
+        if (player.position.y <= -3000) {
+            initPlayer(fromBegining: true)
         }
     }
     
@@ -354,17 +366,25 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         if player != nil && ground != nil {
             jumpNum = 0
-            if jumpableWallAnimation != nil && jumpableWallAnimation {
+            /*if jumpableWallAnimation != nil && jumpableWallAnimation {
                 player.physicsBody?.affectedByGravity = true
                 jumpableWallAnimation = false
                 inAnimation = false
-            }
+            }*/
         }
         else if enemy1 != nil && wall != nil {
             enemy1.physicsBody?.velocity.dx *= -1
         }
         else if player != nil && enemy1 != nil {
-            dieAnimation()
+            if Int(player.position.y - enemy1.position.y) >= (playerHeight + enemy1Size[1])/2 - 5 {
+                enemy1.removeFromParent()
+                
+                //print(Int(player.position.y - enemy1.position.y))
+                //print((Int((player.physicsBody?.accessibilityFrame.height)!) + Int((enemy1.physicsBody?.accessibilityFrame.height)!))/2)
+            }
+            else {
+                dieAnimation()
+            }
         }
         else if coin != nil && player != nil {
             totalCoins += 1
@@ -372,12 +392,32 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             coin.removeFromParent()
         }
         else if player != nil && jumpableWall != nil {
+            jumpNum = maxJumps
             jumpableWallAnimation = true
             inAnimation = true
             player.physicsBody?.velocity.dx = 0
             player.physicsBody?.velocity.dy = CGFloat(-wallSlideVelocity)
             player.physicsBody?.linearDamping = 0
             player.physicsBody?.affectedByGravity = false
+        }
+    }
+    
+    func didEnd(_ contact: SKPhysicsContact) {
+        var player       : SKShapeNode!
+        var jumpableWall : SKShapeNode!
+        if contact.bodyA.categoryBitMask == playerCategory && contact.bodyB.categoryBitMask == jumpableWallCategory {
+            player = contact.bodyA.node as? SKShapeNode
+            jumpableWall = contact.bodyB.node as? SKShapeNode
+        }
+        else if contact.bodyA.categoryBitMask == jumpableWallCategory && contact.bodyB.categoryBitMask == playerCategory {
+            player = contact.bodyB.node as? SKShapeNode
+            jumpableWall = contact.bodyA.node as? SKShapeNode
+        }
+        
+        if (player != nil && jumpableWall != nil && jumpableWallAnimation != nil && jumpableWallAnimation) {
+            initPlayer(fromBegining: false)
+            jumpableWallAnimation = false
+            inAnimation = false
         }
     }
     
