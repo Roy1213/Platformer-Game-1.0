@@ -47,6 +47,7 @@ class GameViewController: UIViewController {
     @IBAction func rightAction(_ sender: UIButton) {
         if !gameScene.inAnimation {
             gameScene.moveRight = true
+            print(gameScene.moveRight)
         }
     }
     
@@ -56,6 +57,19 @@ class GameViewController: UIViewController {
                 gameScene.player?.physicsBody?.velocity.dy = CGFloat(gameScene.jumpSpeed)
                 gameScene.jumpNum += 1
             }
+        }
+        else if gameScene.inAnimation && gameScene.jumpableWallAnimation != nil && gameScene.jumpableWallAnimation {
+            gameScene.player?.physicsBody?.velocity.dy = CGFloat(gameScene.jumpSpeed)
+            if gameScene.xVelocity > 0 {
+                gameScene.player?.physicsBody?.velocity.dx = -CGFloat(gameScene.horizontalHopVelocity)
+                print("test")
+            }
+            else {
+                gameScene.player?.physicsBody?.velocity.dx = CGFloat(gameScene.horizontalHopVelocity)
+            }
+            gameScene.initPlayer(fromBegining: false)
+            gameScene.jumpableWallAnimation = false
+            gameScene.inAnimation = false
         }
     }
     

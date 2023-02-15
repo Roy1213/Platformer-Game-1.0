@@ -51,8 +51,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let wallSizes           = [[20, 300],
                                [20, 300]]
     
-    let jumpableWallSizes   = [[20, 400],
-                               [20, 400]]
+    let jumpableWallSizes   = [[20, 1000],
+                               [20, 1000],
+                               [20, 1000]]
     
     let coinPositions   : [[Int]] = [[200, 200],
                                      [500, 300],
@@ -68,7 +69,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                                            [1000, 100]]
     
     let jumpableWallPositions : [[Int]] = [[1500, 100],
-                                           [2000, 100]]
+                                           [1100, 950],
+                                           [1900, 950]]
     
     var coins         = [SKShapeNode]()
     var enemy1s       = [SKShapeNode]()
@@ -89,6 +91,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var totalCoins = 0
     var coinsLabel : SKLabelNode!
     
+    var jumpableWallAnimation : Bool!
+    var xVelocity             : CGFloat!
+    var horizontalHopVelocity = 500
+    var wallSlideVelocity     = 20
+    
+    var firstInit = true
+    
     
     
     override func sceneDidLoad() {
@@ -98,7 +107,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         cam = SKCameraNode()
         self.camera = cam
         
-        initPlayer()
+        initPlayer(fromBegining: true)
         
         cam.position.x = player.position.x
         cam.position.y = player.position.y
@@ -196,18 +205,42 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             walls.append(wall)
             self.addChild(wall)
         }
+        
+        for i in 0..<jumpableWallPositions.count {
+            let jumpableWall = SKShapeNode(rectOf: CGSize(width: CGFloat(jumpableWallSizes[i][0]), height: CGFloat(jumpableWallSizes[i][1])))
+            jumpableWall.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: CGFloat(jumpableWallSizes[i][0]), height: CGFloat(jumpableWallSizes[i][1])))
+            
+            jumpableWall.physicsBody?.affectedByGravity  = false
+            jumpableWall.physicsBody?.isDynamic          = false
+            jumpableWall.physicsBody?.pinned             = true
+            jumpableWall.physicsBody?.allowsRotation     = false
+            jumpableWall.physicsBody?.restitution        = 0
+            jumpableWall.physicsBody?.friction           = 0
+            
+            jumpableWall.physicsBody?.categoryBitMask    = jumpableWallCategory
+            jumpableWall.physicsBody?.collisionBitMask   = playerCategory
+            jumpableWall.physicsBody?.contactTestBitMask = playerCategory | enemy1Category
+            
+            jumpableWall.position.x = CGFloat(Double(jumpableWallPositions[i][0]))
+            jumpableWall.position.y = CGFloat(Double(jumpableWallPositions[i][1]))
+            
+            walls.append(jumpableWall)
+            self.addChild(jumpableWall)
+        }
     }
     
-    func initPlayer() {
-        player = SKShapeNode(rectOf: CGSize(width: CGFloat(playerWidth), height: CGFloat(playerHeight)))
-        player.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: playerWidth, height: playerHeight))
+    func initPlayer(fromBegining : Bool) {
+        if firstInit {
+            player = SKShapeNode(rectOf: CGSize(width: CGFloat(playerWidth), height: CGFloat(playerHeight)))
+            player.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: playerWidth, height: playerHeight))
+        }
         
         player.physicsBody?.affectedByGravity  = true
         player.physicsBody?.isDynamic          = true
         player.physicsBody?.pinned             = false
         player.physicsBody?.allowsRotation     = false
         player.physicsBody?.restitution        = 0
-        player.physicsBody?.linearDamping      = 0
+        player.physicsBody?.linearDamping      = 0.5
         player.physicsBody?.friction           = 1
         player.physicsBody?.angularVelocity    = 0
         
@@ -215,8 +248,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         player.physicsBody?.collisionBitMask   = groundCategory | wallCategory | jumpableWallCategory
         player.physicsBody?.contactTestBitMask = groundCategory | enemy1Category | coinCategory
         
-        player.position = CGPoint(x: playerStartX , y: playerStartY)
-        self.addChild(player)
+        if fromBegining {
+            player.position = CGPoint(x: playerStartX , y: playerStartY)
+        }
+        
+        if firstInit {
+            self.addChild(player)
+            firstInit = false
+        }
     }
     
     
@@ -247,9 +286,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 }
             }
         }
-        else if inAnimation {
+        else if inAnimation && jumpableWallAnimation == nil || jumpableWallAnimation != nil && !jumpableWallAnimation {
             if (player.position.y <= initialPositionYAnimation - CGFloat(2000)) {
-                initPlayer()
+                print("the great testing")
+                initPlayer(fromBegining: true)
                 inAnimation = false
             }
         }
@@ -258,14 +298,19 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             coinsLabel.position.x = cam.position.x - 500
             coinsLabel.position.y = cam.position.y + 250
         }
+        
+        if ((player.physicsBody?.velocity.dx)! > 5 || (player.physicsBody?.velocity.dx)! < -5) {
+            xVelocity = player.physicsBody?.velocity.dx
+        }
     }
     
     func didBegin(_ contact: SKPhysicsContact) {
-        var player : SKShapeNode!
-        var ground : SKShapeNode!
-        var enemy1 : SKShapeNode!
-        var wall   : SKShapeNode!
-        var coin   : SKShapeNode!
+        var player       : SKShapeNode!
+        var ground       : SKShapeNode!
+        var enemy1       : SKShapeNode!
+        var wall         : SKShapeNode!
+        var coin         : SKShapeNode!
+        var jumpableWall : SKShapeNode!
         if contact.bodyA.categoryBitMask == playerCategory && contact.bodyB.categoryBitMask == groundCategory {
             player = contact.bodyA.node as? SKShapeNode
             ground = contact.bodyB.node as? SKShapeNode
@@ -298,12 +343,22 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             player = contact.bodyB.node as? SKShapeNode
             coin = contact.bodyA.node as? SKShapeNode
         }
-        
-        
-        
+        else if contact.bodyA.categoryBitMask == playerCategory && contact.bodyB.categoryBitMask == jumpableWallCategory {
+            player = contact.bodyA.node as? SKShapeNode
+            jumpableWall = contact.bodyB.node as? SKShapeNode
+        }
+        else if contact.bodyA.categoryBitMask == jumpableWallCategory && contact.bodyB.categoryBitMask == playerCategory {
+            player = contact.bodyB.node as? SKShapeNode
+            jumpableWall = contact.bodyA.node as? SKShapeNode
+        }
         
         if player != nil && ground != nil {
             jumpNum = 0
+            if jumpableWallAnimation != nil && jumpableWallAnimation {
+                player.physicsBody?.affectedByGravity = true
+                jumpableWallAnimation = false
+                inAnimation = false
+            }
         }
         else if enemy1 != nil && wall != nil {
             enemy1.physicsBody?.velocity.dx *= -1
@@ -315,6 +370,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             totalCoins += 1
             coinsLabel.text = "Coins: \(totalCoins)"
             coin.removeFromParent()
+        }
+        else if player != nil && jumpableWall != nil {
+            jumpableWallAnimation = true
+            inAnimation = true
+            player.physicsBody?.velocity.dx = 0
+            player.physicsBody?.velocity.dy = CGFloat(-wallSlideVelocity)
+            player.physicsBody?.linearDamping = 0
+            player.physicsBody?.affectedByGravity = false
         }
     }
     
