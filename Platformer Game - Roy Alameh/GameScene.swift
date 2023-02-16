@@ -41,16 +41,21 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let runMaxSpeed     = 400
     let runAcceleration = 3000
     
-    let enemy1Speed = 300
+    let enemy1Speed = 200
     
     let playerWidth         = 100
     let playerHeight        = 100
     let coinRadius          = 15
     let enemy1Size          = [30, 50]
-    let groundSizes         = [[4000, 100],
-                               [20, 50]]
+    let groundSizes         = [[2000, 100],
+                               [20, 50],
+                               [750, 50]]
+    
     let wallSizes           = [[20, 300],
-                               [20, 300]]
+                               [20, 300],
+                               [50, 48],
+                               [50, 200],
+                               [50, 200]]
     
     let jumpableWallSizes   = [[20, 1000],
                                [20, 1000],
@@ -62,13 +67,22 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                                      [1000, 600],
                                      [1100, 700]]
     
-    let enemy1Positions : [[Int]] = [[750, 300]]
+    let enemy1Positions : [[Int]] = [[750, 300],
+                                     [2250, 300],
+                                     [2400, 300],
+                                     [2550, 300],
+                                     [2750, 300],
+                                     [2900, 300]]
     
-    let groundPositions       : [[Int]] = [[2000, 50],
-                                           [1500, 600]]
+    let groundPositions       : [[Int]] = [[1000, 50],
+                                           [1500, 600],
+                                           [2525, 300]]
     
     let wallPositions         : [[Int]] = [[500, 100],
-                                           [1000, 100]]
+                                           [1000, 100],
+                                           [2125, 300],
+                                           [2175, 375],
+                                           [2925, 375]]
     
     let jumpableWallPositions : [[Int]] = [[1500, 100],
                                            [1100, 950],
@@ -99,6 +113,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var wallSlideVelocity     = 20
     
     var firstInit = true
+    
+    var timeToWait = 0.4
+    var timeWaited = 0.0
+    var canMove = true
     
     
     
@@ -266,7 +284,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     
     override func update(_ currentTime: TimeInterval) {
-        if (moveRight || moveLeft) && !inAnimation {
+        if (moveRight || moveLeft) && !inAnimation && canMove {
             var multiplier = 0
             if moveRight && (player.physicsBody?.velocity.dx)! < CGFloat(runMaxSpeed) {
                 multiplier = 1

@@ -67,9 +67,13 @@ class GameViewController: UIViewController {
             else {
                 gameScene.player?.physicsBody?.velocity.dx = CGFloat(gameScene.horizontalHopVelocity)
             }
+            gameScene.canMove = false
             gameScene.initPlayer(fromBegining: false)
-            gameScene.jumpableWallAnimation = false
-            gameScene.inAnimation = false
+                gameScene.jumpableWallAnimation = false
+                gameScene.inAnimation = false
+            DispatchQueue.main.asyncAfter(deadline: .now() + gameScene.timeToWait, execute: {
+                self.gameScene.canMove = true
+            })
         }
     }
     
