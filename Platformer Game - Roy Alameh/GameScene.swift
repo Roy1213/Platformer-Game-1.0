@@ -119,6 +119,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     var totalCoins = 0
     var coinsLabel : SKLabelNode!
+    var livesLabel : SKLabelNode!
     
     var jumpableWallAnimation = false
     var xVelocity             : CGFloat!
@@ -131,8 +132,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var timeWaited = 0.0
     var canMove = true
     var animationRate = 0.001
-    
-    var won = false
     
     
     
@@ -166,6 +165,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         coinsLabel = SKLabelNode()
         coinsLabel.text = "Coins: \(totalCoins)"
         self.addChild(coinsLabel)
+        
+        livesLabel = SKLabelNode()
+        livesLabel.text = "Lives: \(lives - 1)"
+        self.addChild(livesLabel)
+        
         
         for i in 0..<coinPositions.count {
             let coin = SKShapeNode(circleOfRadius: CGFloat(coinRadius))
@@ -344,6 +348,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             }
         }
         else if inAnimation && !jumpableWallAnimation {
+            print(initialPositionYAnimation)
             if (player.position.y <= initialPositionYAnimation - CGFloat(2000)) {
                 print("the great testing")
                 initPlayer(fromBegining: true)
@@ -352,12 +357,17 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 if (lives == 0) {
                     end(won: false)
                 }
+                if lives != 0 {
+                    livesLabel.text = "Lives: \(lives - 1)"
+                }
             }
         }
         
         if !inAnimation || jumpableWallAnimation {
             coinsLabel.position.x = cam.position.x - 500
             coinsLabel.position.y = cam.position.y + 250
+            livesLabel.position.x = cam.position.x - 500
+            livesLabel.position.y = cam.position.y + 200
         }
         
         if ((player.physicsBody?.velocity.dx)! > 5 || (player.physicsBody?.velocity.dx)! < -5) {
@@ -366,6 +376,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         if (player.position.y <= -3000) {
             initPlayer(fromBegining: true)
+            lives -= 1
+            if (lives == 0) {
+                end(won: false)
+            }
+            if (lives != 0) {
+                livesLabel.text = "Lives: \(lives - 1)"
+            }
         }
     }
     
@@ -480,10 +497,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func end(won: Bool) {
-        let gameScene : GKScene!
-        self.won = won
+        var gameScene : EndScene!
         if let scene = GKScene(fileNamed: "EndScene") {
-            let gameScene = scene.rootNode as! GameScene
+            gameScene = scene.rootNode as? EndScene
             gameScene.entities = scene.entities
             gameScene.graphs = scene.graphs
             gameScene.scaleMode = .aspectFill
@@ -495,6 +511,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 view.showsNodeCount = false
             }
         }
+        if won {
+            gameScene.label.text = "You Win!"
+        }
+        else {
+            gameScene.label.text = "You Lost"
+        }
+        
+        //let viewController = GameViewController()
+        
+        //viewController.hideAll()
     }
     
     
