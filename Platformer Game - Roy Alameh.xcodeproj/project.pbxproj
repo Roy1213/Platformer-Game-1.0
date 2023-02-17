@@ -18,6 +18,8 @@
 		24BCDBA429953D2D006FDDE5 /* Platformer_Game___Roy_AlamehTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24BCDBA329953D2D006FDDE5 /* Platformer_Game___Roy_AlamehTests.swift */; };
 		24BCDBAE29953D2D006FDDE5 /* Platformer_Game___Roy_AlamehUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24BCDBAD29953D2D006FDDE5 /* Platformer_Game___Roy_AlamehUITests.swift */; };
 		24BCDBB029953D2D006FDDE5 /* Platformer_Game___Roy_AlamehUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24BCDBAF29953D2D006FDDE5 /* Platformer_Game___Roy_AlamehUITestsLaunchTests.swift */; };
+		24F1E899299F353000D078DC /* EndScene.sks in Resources */ = {isa = PBXBuildFile; fileRef = 24F1E898299F353000D078DC /* EndScene.sks */; };
+		24F1E89B299F37CE00D078DC /* EndScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24F1E89A299F37CE00D078DC /* EndScene.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -52,6 +54,8 @@
 		24BCDBA929953D2D006FDDE5 /* Platformer Game - Roy AlamehUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Platformer Game - Roy AlamehUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		24BCDBAD29953D2D006FDDE5 /* Platformer_Game___Roy_AlamehUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Platformer_Game___Roy_AlamehUITests.swift"; sourceTree = "<group>"; };
 		24BCDBAF29953D2D006FDDE5 /* Platformer_Game___Roy_AlamehUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Platformer_Game___Roy_AlamehUITestsLaunchTests.swift"; sourceTree = "<group>"; };
+		24F1E898299F353000D078DC /* EndScene.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = EndScene.sks; sourceTree = "<group>"; };
+		24F1E89A299F37CE00D078DC /* EndScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EndScene.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -106,6 +110,8 @@
 				24BCDB8B29953D2D006FDDE5 /* GameScene.sks */,
 				24BCDB8D29953D2D006FDDE5 /* Actions.sks */,
 				24BCDB8F29953D2D006FDDE5 /* GameScene.swift */,
+				24F1E898299F353000D078DC /* EndScene.sks */,
+				24F1E89A299F37CE00D078DC /* EndScene.swift */,
 				24BCDB9129953D2D006FDDE5 /* GameViewController.swift */,
 				24BCDB9329953D2D006FDDE5 /* Main.storyboard */,
 				24BCDB9629953D2D006FDDE5 /* Assets.xcassets */,
@@ -238,6 +244,7 @@
 				24BCDB9529953D2D006FDDE5 /* Main.storyboard in Resources */,
 				24BCDB8C29953D2D006FDDE5 /* GameScene.sks in Resources */,
 				24BCDB9729953D2D006FDDE5 /* Assets.xcassets in Resources */,
+				24F1E899299F353000D078DC /* EndScene.sks in Resources */,
 				24BCDB9A29953D2D006FDDE5 /* LaunchScreen.storyboard in Resources */,
 				24BCDB8E29953D2D006FDDE5 /* Actions.sks in Resources */,
 			);
@@ -265,6 +272,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				24BCDB9029953D2D006FDDE5 /* GameScene.swift in Sources */,
+				24F1E89B299F37CE00D078DC /* EndScene.swift in Sources */,
 				24BCDB9229953D2D006FDDE5 /* GameViewController.swift in Sources */,
 				24BCDB8A29953D2D006FDDE5 /* AppDelegate.swift in Sources */,
 			);

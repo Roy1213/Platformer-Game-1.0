@@ -13,7 +13,12 @@ class GameViewController: UIViewController {
     
     var gameScene : GameScene!
     @IBOutlet weak var inspectOutlet: UIButton!
+    @IBOutlet weak var teleportOutlet: UIButton!
     
+    @IBOutlet weak var rightButtonOutlet: UIButton!
+    @IBOutlet weak var leftButtonOutlet: UIButton!
+    @IBOutlet weak var smallJumpOutlet: UIButton!
+    @IBOutlet weak var largeJumpOutlet: UIButton!
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -40,6 +45,8 @@ class GameViewController: UIViewController {
                 }
                 
                 gameScene = sceneNode
+                teleportOutlet.tintColor = UIColor.green
+                teleportOutlet.isHidden = true
             }
         }
     }
@@ -58,11 +65,11 @@ class GameViewController: UIViewController {
                 gameScene.jumpNum += 1
             }
         }
-        else if gameScene.inAnimation && gameScene.jumpableWallAnimation != nil && gameScene.jumpableWallAnimation {
+        else if gameScene.inAnimation && gameScene.jumpableWallAnimation {
             gameScene.player?.physicsBody?.velocity.dy = CGFloat(gameScene.jumpSpeed)
             if gameScene.xVelocity > 0 {
                 gameScene.player?.physicsBody?.velocity.dx = -CGFloat(gameScene.horizontalHopVelocity)
-                print("test")
+                //print("test")
             }
             else {
                 gameScene.player?.physicsBody?.velocity.dx = CGFloat(gameScene.horizontalHopVelocity)
@@ -98,11 +105,27 @@ class GameViewController: UIViewController {
             gameScene.inspectInitialPositionY = Int(gameScene.cam.position.y)
             gameScene.inspectMode = true
             inspectOutlet.tintColor = UIColor.green
+            teleportOutlet.isHidden = false
         }
         else {
             gameScene.inspectMode = false
             inspectOutlet.tintColor = UIColor.systemBlue
+            teleportOutlet.isHidden = true
         }
+    }
+    
+    @IBAction func teleportAction(_ sender: UIButton) {
+        gameScene.player.position.x = gameScene.cam.position.x
+        gameScene.player.position.y = gameScene.cam.position.y
+    }
+    
+    func hideAll() {
+        inspectOutlet.isHidden     = true
+        teleportOutlet.isHidden    = true
+        largeJumpOutlet.isHidden   = true
+        smallJumpOutlet.isHidden   = true
+        leftButtonOutlet.isHidden  = true
+        rightButtonOutlet.isHidden = true
     }
     
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {

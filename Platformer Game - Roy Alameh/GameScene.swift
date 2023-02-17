@@ -19,8 +19,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var jumpNum   = 0
     var maxJumps  = 2
     
-    var player : SKShapeNode!
-    var cam : SKCameraNode!
+    var player   : SKShapeNode!
+    var cam      : SKCameraNode!
+    var levelEnd : SKShapeNode!
     
     var camInitiateFollowX = 300
     var camInitiateFollowY = 150
@@ -36,6 +37,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let enemy3Category         : UInt32 = 0x1 << 5
     let wallCategory           : UInt32 = 0x1 << 6
     let jumpableWallCategory   : UInt32 = 0x1 << 7
+    let levelEndCategory       : UInt32 = 0x1 << 8
     
     let jumpSpeed       = 700
     let runMaxSpeed     = 400
@@ -49,17 +51,21 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let enemy1Size          = [30, 50]
     let groundSizes         = [[2000, 100],
                                [20, 50],
-                               [750, 50]]
+                               [750, 50],
+                               [60, 20],
+                               [1000, 20]]
     
     let wallSizes           = [[20, 300],
                                [20, 300],
                                [50, 48],
                                [50, 200],
-                               [50, 200]]
+                               [50, 150]]
     
     let jumpableWallSizes   = [[20, 1000],
                                [20, 1000],
-                               [20, 1000]]
+                               [20, 1000],
+                               [50, 1000],
+                               [50, 800]]
     
     let coinPositions   : [[Int]] = [[200, 200],
                                      [500, 300],
@@ -67,32 +73,39 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                                      [1000, 600],
                                      [1100, 700]]
     
-    let enemy1Positions : [[Int]] = [[750, 300],
-                                     [2250, 300],
-                                     [2400, 300],
-                                     [2550, 300],
-                                     [2750, 300],
-                                     [2900, 300]]
+    let enemy1Positions : [[Int]] = [[750, 310],
+                                     [2250, 310],
+                                     [2400, 310],
+                                     [2550, 310],
+                                     [2750, 310],
+                                     [2850, 310]]
     
     let groundPositions       : [[Int]] = [[1000, 50],
                                            [1500, 600],
-                                           [2525, 300]]
+                                           [2525, 300],
+                                           [2925, 1485],
+                                           [3870, 1485]]
     
     let wallPositions         : [[Int]] = [[500, 100],
                                            [1000, 100],
                                            [2125, 300],
                                            [2175, 375],
-                                           [2925, 375]]
+                                           [2925, 350]]
     
     let jumpableWallPositions : [[Int]] = [[1500, 100],
                                            [1100, 950],
-                                           [1900, 950]]
+                                           [1900, 950],
+                                           [3400, 975],
+                                           [2925, 1075]]
     
-    var coins         = [SKShapeNode]()
-    var enemy1s       = [SKShapeNode]()
-    var grounds       = [SKShapeNode]()
-    var walls         = [SKShapeNode]()
-    var jumpableWalls = [SKShapeNode]()
+    let levelEndPosition = [4200, 1550]
+    
+    var coins           = [SKShapeNode]()
+    var enemy1s         = [SKShapeNode]()
+    var enemy1sAnimated = [SKShapeNode]()
+    var grounds         = [SKShapeNode]()
+    var walls           = [SKShapeNode]()
+    var jumpableWalls   = [SKShapeNode]()
     
     var inspectMode = false
     var inspectInitialPositionX = 0
@@ -100,23 +113,26 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var lastTouchX : CGFloat!
     var lastTouchY : CGFloat!
     
-    var lives = 2
+    var lives = 3
     var inAnimation = false
     var initialPositionYAnimation : CGFloat = 0
     
     var totalCoins = 0
     var coinsLabel : SKLabelNode!
     
-    var jumpableWallAnimation : Bool!
+    var jumpableWallAnimation = false
     var xVelocity             : CGFloat!
     var horizontalHopVelocity = 500
-    var wallSlideVelocity     = 20
+    var wallSlideVelocity     = 100
     
     var firstInit = true
     
     var timeToWait = 0.4
     var timeWaited = 0.0
     var canMove = true
+    var animationRate = 0.001
+    
+    var won = false
     
     
     
@@ -128,6 +144,21 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         self.camera = cam
         
         initPlayer(fromBegining: true)
+        
+        levelEnd = SKShapeNode(circleOfRadius: 50)
+        levelEnd.physicsBody = SKPhysicsBody(circleOfRadius: 50)
+        
+        levelEnd.physicsBody?.affectedByGravity  = false
+        levelEnd.physicsBody?.pinned             = true
+        levelEnd.physicsBody?.categoryBitMask    = levelEndCategory
+        levelEnd.physicsBody?.collisionBitMask   = 0
+        levelEnd.physicsBody?.contactTestBitMask = playerCategory
+        
+        levelEnd.position.x = CGFloat(levelEndPosition[0])
+        levelEnd.position.y = CGFloat(levelEndPosition[1])
+        
+        self.addChild(levelEnd)
+        
         
         cam.position.x = player.position.x
         cam.position.y = player.position.y
@@ -294,7 +325,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             }
             player?.physicsBody?.applyForce(CGVector(dx: multiplier * runAcceleration, dy: 0))
         }
-        if !inspectMode && (!inAnimation || (jumpableWallAnimation != nil && jumpableWallAnimation)) {
+        if !inspectMode && (!inAnimation || jumpableWallAnimation) && player.position.y > -1000 {
             if abs(player.position.x - cam.position.x) >= CGFloat(camInitiateFollowX) {
                 if player.position.x > cam.position.x {
                     cam.position.x += player.position.x - cam.position.x - CGFloat(camInitiateFollowX)
@@ -312,15 +343,19 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 }
             }
         }
-        else if inAnimation && jumpableWallAnimation == nil || jumpableWallAnimation != nil && !jumpableWallAnimation {
+        else if inAnimation && !jumpableWallAnimation {
             if (player.position.y <= initialPositionYAnimation - CGFloat(2000)) {
                 print("the great testing")
                 initPlayer(fromBegining: true)
                 inAnimation = false
+                lives -= 1
+                if (lives == 0) {
+                    end(won: false)
+                }
             }
         }
         
-        if !inAnimation {
+        if !inAnimation || jumpableWallAnimation {
             coinsLabel.position.x = cam.position.x - 500
             coinsLabel.position.y = cam.position.y + 250
         }
@@ -341,6 +376,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         var wall         : SKShapeNode!
         var coin         : SKShapeNode!
         var jumpableWall : SKShapeNode!
+        var levelEnd     : SKShapeNode!
         if contact.bodyA.categoryBitMask == playerCategory && contact.bodyB.categoryBitMask == groundCategory {
             player = contact.bodyA.node as? SKShapeNode
             ground = contact.bodyB.node as? SKShapeNode
@@ -381,24 +417,43 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             player = contact.bodyB.node as? SKShapeNode
             jumpableWall = contact.bodyA.node as? SKShapeNode
         }
+        else if contact.bodyA.categoryBitMask == playerCategory && contact.bodyB.categoryBitMask == levelEndCategory {
+            player = contact.bodyA.node as? SKShapeNode
+            levelEnd = contact.bodyB.node as? SKShapeNode
+        }
+        else if contact.bodyA.categoryBitMask == levelEndCategory && contact.bodyB.categoryBitMask == playerCategory {
+            player = contact.bodyB.node as? SKShapeNode
+            levelEnd = contact.bodyA.node as? SKShapeNode
+        }
+        
         
         if player != nil && ground != nil {
             jumpNum = 0
-            /*if jumpableWallAnimation != nil && jumpableWallAnimation {
-                player.physicsBody?.affectedByGravity = true
-                jumpableWallAnimation = false
-                inAnimation = false
-            }*/
         }
         else if enemy1 != nil && wall != nil {
             enemy1.physicsBody?.velocity.dx *= -1
         }
         else if player != nil && enemy1 != nil {
             if Int(player.position.y - enemy1.position.y) >= (playerHeight + enemy1Size[1])/2 - 5 {
+                player.physicsBody?.velocity.dy = CGFloat(jumpSpeed)
+                //enemy1.removeFromParent()
+                //enemy1sAnimated.append(enemy1)
+                enemy1.physicsBody?.velocity.dy = 0
+                enemy1.physicsBody?.velocity.dx = 0
+                let texture = self.view?.texture(from: enemy1)
+                let enemy1Sprite = SKSpriteNode(texture: texture)
+                enemy1Sprite.position = enemy1.position
                 enemy1.removeFromParent()
+                self.addChild(enemy1Sprite)
                 
-                //print(Int(player.position.y - enemy1.position.y))
-                //print((Int((player.physicsBody?.accessibilityFrame.height)!) + Int((enemy1.physicsBody?.accessibilityFrame.height)!))/2)
+                let duration = 0.5
+                enemy1Sprite.run(SKAction.moveTo(y: enemy1Sprite.position.y - enemy1Sprite.frame.height / 2, duration: TimeInterval(duration)))
+                enemy1Sprite.run(SKAction.sequence([SKAction.resize(toWidth: enemy1.frame.width * 1.25, height: 0, duration: TimeInterval(duration)), SKAction.removeFromParent()]))
+                    /*while (enemy1.frame.height >= 0) {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + animationRate, execute: {
+                                enemy1.
+                        })
+                    }*/
             }
             else {
                 dieAnimation()
@@ -415,10 +470,34 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             inAnimation = true
             player.physicsBody?.velocity.dx = 0
             player.physicsBody?.velocity.dy = CGFloat(-wallSlideVelocity)
+            //player.physicsBody?.velocity.dy = 0
             player.physicsBody?.linearDamping = 0
             player.physicsBody?.affectedByGravity = false
         }
+        else if player != nil && levelEnd != nil {
+            end(won: true)
+        }
     }
+    
+    func end(won: Bool) {
+        let gameScene : GKScene!
+        self.won = won
+        if let scene = GKScene(fileNamed: "EndScene") {
+            let gameScene = scene.rootNode as! GameScene
+            gameScene.entities = scene.entities
+            gameScene.graphs = scene.graphs
+            gameScene.scaleMode = .aspectFill
+            if let view = self.view {
+                let transition = SKTransition.fade(withDuration: 3)
+                view.presentScene(gameScene, transition: transition)
+                view.ignoresSiblingOrder = true
+                view.showsFPS = false
+                view.showsNodeCount = false
+            }
+        }
+    }
+    
+    
     
     func didEnd(_ contact: SKPhysicsContact) {
         var player       : SKShapeNode!
@@ -432,7 +511,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             jumpableWall = contact.bodyA.node as? SKShapeNode
         }
         
-        if (player != nil && jumpableWall != nil && jumpableWallAnimation != nil && jumpableWallAnimation) {
+        if (player != nil && jumpableWall != nil && jumpableWallAnimation) {
             initPlayer(fromBegining: false)
             jumpableWallAnimation = false
             inAnimation = false
@@ -440,9 +519,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        for touch in touches {
-            lastTouchX = touch.location(in: self).x
-            lastTouchY = touch.location(in: self).y
+        if inspectMode {
+            for touch in touches {
+                lastTouchX = touch.location(in: self).x
+                lastTouchY = touch.location(in: self).y
+            }
         }
     }
     
