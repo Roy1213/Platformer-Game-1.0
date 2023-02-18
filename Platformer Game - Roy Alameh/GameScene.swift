@@ -107,11 +107,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var walls           = [SKShapeNode]()
     var jumpableWalls   = [SKShapeNode]()
     
-    var inspectMode = false
+    var inspectMode             = false
     var inspectInitialPositionX = 0
     var inspectInitialPositionY = 0
-    var lastTouchX : CGFloat!
-    var lastTouchY : CGFloat!
+    var lastTouchX              : CGFloat!
+    var lastTouchY              : CGFloat!
     
     var lives = 3
     var inAnimation = false
@@ -121,6 +121,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var coinsLabel : SKLabelNode!
     var livesLabel : SKLabelNode!
     
+    var inspectOutlet     : SKLabelNode!
+    var teleportOutlet    : SKLabelNode!
+    var rightButtonOutlet : SKLabelNode!
+    var leftButtonOutlet  : SKLabelNode!
+    var smallJumpOutlet   : SKLabelNode!
+    var largeJumpOutlet   : SKLabelNode!
+    
     var jumpableWallAnimation = false
     var xVelocity             : CGFloat!
     var horizontalHopVelocity = 500
@@ -128,10 +135,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     var firstInit = true
     
-    var timeToWait = 0.4
-    var timeWaited = 0.0
-    var canMove = true
+    var timeToWait    = 0.4
+    var timeWaited    = 0.0
+    var canMove       = true
     var animationRate = 0.001
+    
+    let movementOutletSize = 100
     
     
     
@@ -157,19 +166,54 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         levelEnd.position.y = CGFloat(levelEndPosition[1])
         
         self.addChild(levelEnd)
-        
-        
+
         cam.position.x = player.position.x
         cam.position.y = player.position.y
         
-        coinsLabel = SKLabelNode()
-        coinsLabel.text = "Coins: \(totalCoins)"
+        coinsLabel                 = SKLabelNode()
+        coinsLabel.text            = "Coins: \(totalCoins)"
         self.addChild(coinsLabel)
         
-        livesLabel = SKLabelNode()
-        livesLabel.text = "Lives: \(lives - 1)"
+        livesLabel                 = SKLabelNode()
+        livesLabel.text            = "Lives: \(lives)"
         self.addChild(livesLabel)
         
+        inspectOutlet              = SKLabelNode()
+        inspectOutlet.text         = "Inspect"
+        inspectOutlet.name         = "inspectOutlet"
+        inspectOutlet.fontSize     = 30
+        self.addChild(inspectOutlet)
+        
+        teleportOutlet             = SKLabelNode()
+        teleportOutlet.text        = "Teleport"
+        teleportOutlet.name        = "teleportOutlet"
+        teleportOutlet.fontSize    = 30
+        teleportOutlet.isHidden    = true
+        self.addChild(teleportOutlet)
+        
+        rightButtonOutlet          = SKLabelNode()
+        rightButtonOutlet.text     = "→"
+        rightButtonOutlet.name     = "rightButtonOutlet"
+        rightButtonOutlet.fontSize = CGFloat(movementOutletSize)
+        self.addChild(rightButtonOutlet)
+        
+        leftButtonOutlet           = SKLabelNode()
+        leftButtonOutlet.text      = "←"
+        leftButtonOutlet.name      = "leftButtonOutlet"
+        leftButtonOutlet.fontSize  = CGFloat(movementOutletSize)
+        self.addChild(leftButtonOutlet)
+        
+        smallJumpOutlet            = SKLabelNode()
+        smallJumpOutlet.text       = "↑"
+        smallJumpOutlet.name       = "smallJumpOutlet"
+        smallJumpOutlet.fontSize   = CGFloat(movementOutletSize)
+        self.addChild(smallJumpOutlet)
+        
+        largeJumpOutlet            = SKLabelNode()
+        largeJumpOutlet.text       = "↑"
+        largeJumpOutlet.name       = "largeJumpOutlet"
+        largeJumpOutlet.fontSize   = CGFloat(movementOutletSize)
+        self.addChild(largeJumpOutlet)
         
         for i in 0..<coinPositions.count {
             let coin = SKShapeNode(circleOfRadius: CGFloat(coinRadius))
@@ -304,6 +348,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             player.physicsBody?.velocity.dx        = 0
             player.physicsBody?.velocity.dy        = 0
             player.position = CGPoint(x: playerStartX , y: playerStartY)
+            rightStop()
+            leftStop()
         }
         
         player.physicsBody?.categoryBitMask    = playerCategory
@@ -315,8 +361,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             firstInit = false
         }
     }
-    
-    
     
     override func update(_ currentTime: TimeInterval) {
         if (moveRight || moveLeft) && !inAnimation && canMove {
@@ -348,9 +392,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             }
         }
         else if inAnimation && !jumpableWallAnimation {
-            print(initialPositionYAnimation)
             if (player.position.y <= initialPositionYAnimation - CGFloat(2000)) {
-                print("the great testing")
                 initPlayer(fromBegining: true)
                 inAnimation = false
                 lives -= 1
@@ -358,17 +400,27 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                     end(won: false)
                 }
                 if lives != 0 {
-                    livesLabel.text = "Lives: \(lives - 1)"
+                    livesLabel.text = "Lives: \(lives)"
                 }
             }
         }
         
-        if !inAnimation || jumpableWallAnimation {
-            coinsLabel.position.x = cam.position.x - 500
-            coinsLabel.position.y = cam.position.y + 250
-            livesLabel.position.x = cam.position.x - 500
-            livesLabel.position.y = cam.position.y + 200
-        }
+        coinsLabel.position.x        = cam.position.x - 500
+        coinsLabel.position.y        = cam.position.y + 250
+        livesLabel.position.x        = cam.position.x - 500
+        livesLabel.position.y        = cam.position.y + 200
+        inspectOutlet.position.x     = cam.position.x + 500
+        inspectOutlet.position.y     = cam.position.y + 250
+        teleportOutlet.position.x    = cam.position.x - 500
+        teleportOutlet.position.y    = cam.position.y + 150
+        rightButtonOutlet.position.x = cam.position.x - 400
+        rightButtonOutlet.position.y = cam.position.y - 250
+        leftButtonOutlet.position.x  = cam.position.x - 500
+        leftButtonOutlet.position.y  = cam.position.y - 250
+        smallJumpOutlet.position.x   = cam.position.x - 450
+        smallJumpOutlet.position.y   = cam.position.y - 200
+        largeJumpOutlet.position.x   = cam.position.x + 450
+        largeJumpOutlet.position.y   = cam.position.y - 250
         
         if ((player.physicsBody?.velocity.dx)! > 5 || (player.physicsBody?.velocity.dx)! < -5) {
             xVelocity = player.physicsBody?.velocity.dx
@@ -381,7 +433,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 end(won: false)
             }
             if (lives != 0) {
-                livesLabel.text = "Lives: \(lives - 1)"
+                livesLabel.text = "Lives: \(lives)"
             }
         }
     }
@@ -443,7 +495,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             levelEnd = contact.bodyA.node as? SKShapeNode
         }
         
-        
         if player != nil && ground != nil {
             jumpNum = 0
         }
@@ -453,8 +504,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         else if player != nil && enemy1 != nil {
             if Int(player.position.y - enemy1.position.y) >= (playerHeight + enemy1Size[1])/2 - 5 {
                 player.physicsBody?.velocity.dy = CGFloat(jumpSpeed)
-                //enemy1.removeFromParent()
-                //enemy1sAnimated.append(enemy1)
                 enemy1.physicsBody?.velocity.dy = 0
                 enemy1.physicsBody?.velocity.dx = 0
                 let texture = self.view?.texture(from: enemy1)
@@ -466,11 +515,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 let duration = 0.5
                 enemy1Sprite.run(SKAction.moveTo(y: enemy1Sprite.position.y - enemy1Sprite.frame.height / 2, duration: TimeInterval(duration)))
                 enemy1Sprite.run(SKAction.sequence([SKAction.resize(toWidth: enemy1.frame.width * 1.25, height: 0, duration: TimeInterval(duration)), SKAction.removeFromParent()]))
-                    /*while (enemy1.frame.height >= 0) {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + animationRate, execute: {
-                                enemy1.
-                        })
-                    }*/
             }
             else {
                 dieAnimation()
@@ -482,12 +526,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             coin.removeFromParent()
         }
         else if player != nil && jumpableWall != nil {
-            jumpNum = maxJumps
+            jumpNum = maxJumps - 1
             jumpableWallAnimation = true
             inAnimation = true
             player.physicsBody?.velocity.dx = 0
             player.physicsBody?.velocity.dy = CGFloat(-wallSlideVelocity)
-            //player.physicsBody?.velocity.dy = 0
             player.physicsBody?.linearDamping = 0
             player.physicsBody?.affectedByGravity = false
         }
@@ -517,13 +560,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         else {
             gameScene.label.text = "You Lost"
         }
-        
-        //let viewController = GameViewController()
-        
-        //viewController.hideAll()
     }
-    
-    
     
     func didEnd(_ contact: SKPhysicsContact) {
         var player       : SKShapeNode!
@@ -545,10 +582,27 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        if inspectMode {
-            for touch in touches {
-                lastTouchX = touch.location(in: self).x
-                lastTouchY = touch.location(in: self).y
+        for touch in touches {
+            lastTouchX = touch.location(in: self).x
+            lastTouchY = touch.location(in: self).y
+            
+            if self.nodes(at: touch.location(in: self)).count > 0 && self.nodes(at: touch.location(in: self))[self.nodes(at: touch.location(in: self)).count - 1].name == "inspectOutlet" {
+                inspectAction()
+            }
+            else if self.nodes(at: touch.location(in: self)).count > 0 && self.nodes(at: touch.location(in: self))[self.nodes(at: touch.location(in: self)).count - 1].name == "teleportOutlet" {
+                teleportAction()
+            }
+            else if self.nodes(at: touch.location(in: self)).count > 0 && self.nodes(at: touch.location(in: self))[self.nodes(at: touch.location(in: self)).count - 1].name == "rightButtonOutlet" {
+                rightAction()
+            }
+            else if self.nodes(at: touch.location(in: self)).count > 0 && self.nodes(at: touch.location(in: self))[self.nodes(at: touch.location(in: self)).count - 1].name == "leftButtonOutlet" {
+                leftAction()
+            }
+            else if self.nodes(at: touch.location(in: self)).count > 0 && self.nodes(at: touch.location(in: self))[self.nodes(at: touch.location(in: self)).count - 1].name == "smallJumpOutlet" {
+                jumpAction()
+            }
+            else if self.nodes(at: touch.location(in: self)).count > 0 && self.nodes(at: touch.location(in: self))[self.nodes(at: touch.location(in: self)).count - 1].name == "largeJumpOutlet" {
+                jumpAction()
             }
         }
     }
@@ -561,6 +615,78 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 cam.position.y += lastTouchY - touch.location(in: self).y
             }
         }
+    }
+    
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if moveRight || moveLeft {
+            rightStop()
+            leftStop()
+        }
+    }
+    
+    func rightAction() {
+        if !inAnimation {
+            moveRight = true
+        }
+    }
+    
+    func jumpAction() {
+        if !inAnimation {
+            if jumpNum < maxJumps {
+                player.physicsBody?.velocity.dy = CGFloat(jumpSpeed)
+                jumpNum += 1
+            }
+        }
+        else if inAnimation && jumpableWallAnimation {
+            player.physicsBody?.velocity.dy = CGFloat(jumpSpeed)
+            if xVelocity > 0 {
+                player?.physicsBody?.velocity.dx = -CGFloat(horizontalHopVelocity)
+            }
+            else {
+                player.physicsBody?.velocity.dx = CGFloat(horizontalHopVelocity)
+            }
+            canMove = false
+            initPlayer(fromBegining: false)
+                jumpableWallAnimation = false
+                inAnimation = false
+            DispatchQueue.main.asyncAfter(deadline: .now() + timeToWait, execute: {
+                self.canMove = true
+            })
+        }
+    }
+    
+    func leftAction() {
+        if !inAnimation {
+            moveLeft = true
+        }
+    }
+    
+    func rightStop() {
+        moveRight = false
+    }
+    
+    func leftStop() {
+        moveLeft = false
+    }
+    
+    func inspectAction() {
+        if inspectMode == false {
+            inspectInitialPositionX = Int(cam.position.x)
+            inspectInitialPositionY = Int(cam.position.y)
+            inspectMode = true
+            inspectOutlet.color = UIColor.green
+            teleportOutlet.isHidden = false
+        }
+        else {
+            inspectMode = false
+            inspectOutlet.color = UIColor.systemBlue
+            teleportOutlet.isHidden = true
+        }
+    }
+    
+    func teleportAction() {
+        player.position.x = cam.position.x
+        player.position.y = cam.position.y
     }
     
     func dieAnimation() {

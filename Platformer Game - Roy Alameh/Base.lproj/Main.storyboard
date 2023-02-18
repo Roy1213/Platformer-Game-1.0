@@ -15,75 +15,9 @@
                     <view key="view" multipleTouchEnabled="YES" contentMode="scaleToFill" id="3se-qz-xqx" customClass="SKView">
                         <rect key="frame" x="0.0" y="0.0" width="852" height="393"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <subviews>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="1PE-ml-wER">
-                                <rect key="frame" x="107" y="250" width="58" height="48"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="filled" title="↑"/>
-                                <connections>
-                                    <action selector="jumpAction:" destination="BV1-FR-VrT" eventType="touchDown" id="4o8-wZ-gFi"/>
-                                </connections>
-                            </button>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="dul-fE-CcY">
-                                <rect key="frame" x="667" y="303" width="155" height="80"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="filled" title="↑"/>
-                                <connections>
-                                    <action selector="jumpAction:" destination="BV1-FR-VrT" eventType="touchDown" id="061-6f-keF"/>
-                                </connections>
-                            </button>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ldi-mL-Xtw">
-                                <rect key="frame" x="149" y="316" width="91" height="43"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="filled" title="→"/>
-                                <connections>
-                                    <action selector="rightAction:" destination="BV1-FR-VrT" eventType="touchDown" id="HHu-Lr-tij"/>
-                                    <action selector="rightStop:" destination="BV1-FR-VrT" eventType="touchUpInside" id="eTI-A5-DW5"/>
-                                </connections>
-                            </button>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ycu-Xa-CgO">
-                                <rect key="frame" x="732" y="16" width="81" height="35"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="filled" title="Inspect"/>
-                                <connections>
-                                    <action selector="inspectReleased:" destination="BV1-FR-VrT" eventType="touchUpInside" id="93Q-MB-Re6"/>
-                                </connections>
-                            </button>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="nkM-a7-kr0">
-                                <rect key="frame" x="39" y="316" width="83" height="43"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="filled" title="←"/>
-                                <connections>
-                                    <action selector="leftAction:" destination="BV1-FR-VrT" eventType="touchDown" id="zFN-1w-qly"/>
-                                    <action selector="leftStop:" destination="BV1-FR-VrT" eventType="touchUpInside" id="fZM-QK-UWW"/>
-                                </connections>
-                            </button>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="h0D-mZ-nYt">
-                                <rect key="frame" x="14" y="59" width="87" height="35"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="filled" title="Teleport"/>
-                                <connections>
-                                    <action selector="teleportAction:" destination="BV1-FR-VrT" eventType="touchDown" id="kbU-kK-Bwe"/>
-                                </connections>
-                            </button>
-                        </subviews>
                         <viewLayoutGuide key="safeArea" id="4qk-I5-YsI"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                     </view>
-                    <connections>
-                        <outlet property="inspectOutlet" destination="ycu-Xa-CgO" id="i2N-dU-dWP"/>
-                        <outlet property="largeJumpOutlet" destination="dul-fE-CcY" id="DiM-C3-zY6"/>
-                        <outlet property="leftButtonOutlet" destination="nkM-a7-kr0" id="q7d-OO-k3y"/>
-                        <outlet property="rightButtonOutlet" destination="ldi-mL-Xtw" id="5M8-35-t2E"/>
-                        <outlet property="smallJumpOutlet" destination="1PE-ml-wER" id="7HP-Ad-kvZ"/>
-                        <outlet property="teleportOutlet" destination="h0D-mZ-nYt" id="gXW-Rq-sts"/>
-                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="SZV-WD-TEh" sceneMemberID="firstResponder"/>
             </objects>
