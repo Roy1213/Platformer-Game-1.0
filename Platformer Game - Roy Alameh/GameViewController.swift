@@ -29,6 +29,7 @@ class GameViewController: UIViewController {
 
                 // Present the scene
                 if let view = self.view as! SKView? {
+                    view.isMultipleTouchEnabled = true
                     view.presentScene(sceneNode)
                     
                     view.ignoresSiblingOrder = true

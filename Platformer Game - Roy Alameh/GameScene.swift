@@ -140,7 +140,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var canMove       = true
     var animationRate = 0.001
     
-    let movementOutletSize = 100
+    let movementOutletSize = 250
     
     
     
@@ -192,25 +192,25 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         self.addChild(teleportOutlet)
         
         rightButtonOutlet          = SKLabelNode()
-        rightButtonOutlet.text     = "→"
+        rightButtonOutlet.text     = "►"
         rightButtonOutlet.name     = "rightButtonOutlet"
         rightButtonOutlet.fontSize = CGFloat(movementOutletSize)
         self.addChild(rightButtonOutlet)
         
         leftButtonOutlet           = SKLabelNode()
-        leftButtonOutlet.text      = "←"
+        leftButtonOutlet.text      = "◄"
         leftButtonOutlet.name      = "leftButtonOutlet"
         leftButtonOutlet.fontSize  = CGFloat(movementOutletSize)
         self.addChild(leftButtonOutlet)
         
-        smallJumpOutlet            = SKLabelNode()
-        smallJumpOutlet.text       = "↑"
+        /*smallJumpOutlet            = SKLabelNode()
+        smallJumpOutlet.text       = "▲"
         smallJumpOutlet.name       = "smallJumpOutlet"
         smallJumpOutlet.fontSize   = CGFloat(movementOutletSize)
-        self.addChild(smallJumpOutlet)
+        self.addChild(smallJumpOutlet)*/
         
         largeJumpOutlet            = SKLabelNode()
-        largeJumpOutlet.text       = "↑"
+        largeJumpOutlet.text       = "⍙"
         largeJumpOutlet.name       = "largeJumpOutlet"
         largeJumpOutlet.fontSize   = CGFloat(movementOutletSize)
         self.addChild(largeJumpOutlet)
@@ -413,13 +413,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         inspectOutlet.position.y     = cam.position.y + 250
         teleportOutlet.position.x    = cam.position.x - 500
         teleportOutlet.position.y    = cam.position.y + 150
-        rightButtonOutlet.position.x = cam.position.x - 400
+        rightButtonOutlet.position.x = cam.position.x - 370
         rightButtonOutlet.position.y = cam.position.y - 250
-        leftButtonOutlet.position.x  = cam.position.x - 500
+        leftButtonOutlet.position.x  = cam.position.x - 570
         leftButtonOutlet.position.y  = cam.position.y - 250
-        smallJumpOutlet.position.x   = cam.position.x - 450
-        smallJumpOutlet.position.y   = cam.position.y - 200
-        largeJumpOutlet.position.x   = cam.position.x + 450
+        largeJumpOutlet.position.x   = cam.position.x + 500
         largeJumpOutlet.position.y   = cam.position.y - 250
         
         if ((player.physicsBody?.velocity.dx)! > 5 || (player.physicsBody?.velocity.dx)! < -5) {
@@ -502,7 +500,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             enemy1.physicsBody?.velocity.dx *= -1
         }
         else if player != nil && enemy1 != nil {
-            if Int(player.position.y - enemy1.position.y) >= (playerHeight + enemy1Size[1])/2 - 5 {
+            if Int(player.position.y - enemy1.position.y) >= (playerHeight + enemy1Size[1])/2 - 10 {
                 player.physicsBody?.velocity.dy = CGFloat(jumpSpeed)
                 enemy1.physicsBody?.velocity.dy = 0
                 enemy1.physicsBody?.velocity.dx = 0
@@ -618,9 +616,18 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-        if moveRight || moveLeft {
-            rightStop()
-            leftStop()
+        for touch in touches {
+            print(touch.location(in: self).x)
+        }
+        for touch in touches {
+            if moveRight || moveLeft {
+                if self.nodes(at: touch.location(in: self)).count > 0 && self.nodes(at: touch.location(in: self))[self.nodes(at: touch.location(in: self)).count - 1].name == "rightButtonOutlet" {
+                    rightStop()
+                }
+                if self.nodes(at: touch.location(in: self)).count > 0 && self.nodes(at: touch.location(in: self))[self.nodes(at: touch.location(in: self)).count - 1].name == "leftButtonOutlet" {
+                    leftStop()
+                }
+            }
         }
     }
     
