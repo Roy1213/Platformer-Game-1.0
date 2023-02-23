@@ -157,6 +157,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     var correctionConstant = 0.0
     
+    var joint : SKPhysicsJoint!
+    var centerOfMass: SKShapeNode!
+    
+    var lastSpeed = 0
+    
+    var touchingGround = false
+    
     
     override func sceneDidLoad() {
         self.physicsWorld.contactDelegate = self
@@ -229,6 +236,40 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         largeJumpOutlet.fontSize   = CGFloat(movementOutletSize)
         self.addChild(largeJumpOutlet)
         
+        
+        let legSize = CGSize(width: 10, height: legLength)
+        rightLeg = SKShapeNode(rectOf: legSize)
+        rightLeg.physicsBody = SKPhysicsBody(rectangleOf: legSize)
+        rightLeg.physicsBody?.mass = 0.001
+        rightLeg.position.x = 100
+        rightLeg.position.y = 310
+        rightLeg.physicsBody?.affectedByGravity = false
+        rightLeg.physicsBody?.pinned = false
+        rightLeg.physicsBody?.allowsRotation = true
+        rightLeg.physicsBody?.categoryBitMask = 0
+        rightLeg.physicsBody?.collisionBitMask = 0
+        
+        centerOfMass = SKShapeNode(circleOfRadius: 1)
+        centerOfMass.physicsBody = SKPhysicsBody(circleOfRadius: 1)
+        centerOfMass.position.x = rightLeg.position.x
+        centerOfMass.position.y = rightLeg.position.y + CGFloat(legLength)/2
+        centerOfMass.physicsBody?.mass = 10
+        centerOfMass.physicsBody?.affectedByGravity = false
+        centerOfMass.physicsBody?.pinned = false
+        centerOfMass.physicsBody?.allowsRotation = true
+        centerOfMass.physicsBody?.categoryBitMask = 0
+        centerOfMass.physicsBody?.collisionBitMask = 0
+        
+        self.addChild(rightLeg)
+        self.addChild(centerOfMass)
+        var body = SKPhysicsBody(bodies: [rightLeg.physicsBody, centerOfMass.physicsBody] as! [SKPhysicsBody])
+        
+        joint = SKPhysicsJointFixed.joint(withBodyA: rightLeg.physicsBody!, bodyB: centerOfMass.physicsBody!, anchor: rightLeg.position)
+        
+        
+        
+        self.physicsWorld.add(joint)
+        
         for i in 0..<coinPositions.count {
             let coin = SKShapeNode(circleOfRadius: CGFloat(coinRadius))
             coin.physicsBody = SKPhysicsBody(circleOfRadius: CGFloat(coinRadius))
@@ -258,7 +299,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             ground.physicsBody?.pinned             = true
             ground.physicsBody?.allowsRotation     = false
             ground.physicsBody?.restitution        = 0
-            ground.physicsBody?.friction           = 0.2
+            ground.physicsBody?.friction           = 0
             
             ground.physicsBody?.categoryBitMask    = groundCategory
             ground.physicsBody?.collisionBitMask   = playerCategory
@@ -353,8 +394,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         player.physicsBody?.pinned             = false
         player.physicsBody?.allowsRotation     = false
         player.physicsBody?.restitution        = 0
-        player.physicsBody?.linearDamping      = 0.5
-        player.physicsBody?.friction           = 1
+        player.physicsBody?.linearDamping      = 0
+        player.physicsBody?.friction           = 0
+        player.physicsBody?.mass = 1
         
         if fromBegining {
             player.physicsBody?.angularVelocity    = 0
@@ -374,41 +416,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             self.addChild(player)
             firstInit = false
         }
-        
-        let legSize = CGSize(width: 30, height: legLength)
-        rightLeg = SKShapeNode(rectOf: legSize)
-        rightLeg.physicsBody = SKPhysicsBody(rectangleOf: legSize)
-        rightLeg.physicsBody?.mass = 0
-        rightLeg.position.x = 100
-        rightLeg.position.y = 300
-        
-        var centerOfMass = SKShapeNode(circleOfRadius: 1)
-        centerOfMass.physicsBody = SKPhysicsBody(circleOfRadius: 1)
-        centerOfMass.position.x = rightLeg.position.x
-        centerOfMass.position.y = rightLeg.position.y + CGFloat(legLength)
-        centerOfMass.physicsBody?.mass = 1
-        
-        //rightLeg.physicsBody = SKPhysicsBody(bodies: [rightLeg.physicsBody, centerOfMass.physicsBody] as! [SKPhysicsBody])
-        
-        let joint = SKPhysicsJointFixed.joint(withBodyA: rightLeg.physicsBody!, bodyB: centerOfMass.physicsBody!, anchor: rightLeg.position)
-        
-        
-        rightLeg.position.x = 100
-        rightLeg.position.y = 300
-        
-        rightLeg.physicsBody?.affectedByGravity = false
-        rightLeg.physicsBody?.pinned = false
-        rightLeg.physicsBody?.allowsRotation = true
-//        var skActions = [SKAction.moveTo(x: 100, duration: 0), SKAction.moveTo(y: 300, duration: 0.01)]
-//        rightLeg.run(SKAction.repeatForever(SKAction.sequence(skActions)))
-        
-        var testPoint = SKShapeNode(circleOfRadius: 1)
-        testPoint.position = legCenterPoint
-        testPoint2 = SKShapeNode(circleOfRadius: 1)
-        self.addChild(rightLeg)
-        self.addChild(testPoint)
-        self.addChild(testPoint2)
-        
     }
     
     override func update(_ currentTime: TimeInterval) {
@@ -420,8 +427,18 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             else if moveLeft && (player.physicsBody?.velocity.dx)! > CGFloat(-runMaxSpeed) {
                 multiplier = -1
             }
-            player?.physicsBody?.applyForce(CGVector(dx: multiplier * runAcceleration, dy: 0))
+//            else {
+//                player.physicsBody?.velocity.dx = CGFloat(CGFloat(runMaxSpeed) * (player.physicsBody?.velocity.dx ?? 0)/abs(player.physicsBody?.velocity.dx ?? 0))
+//            }
+            player?.physicsBody?.applyForce(CGVector(dx: CGFloat(multiplier * runAcceleration) * (player.physicsBody?.mass ?? 1), dy: 0))
         }
+        else if ((player.physicsBody?.velocity.dx)! > 5 && touchingGround) {
+            player?.physicsBody?.applyForce(CGVector(dx: CGFloat(-1 * runAcceleration) * (player.physicsBody?.mass ?? 1), dy: 0))
+        }
+        else if ((player.physicsBody?.velocity.dx)! < -5 && touchingGround) {
+            player?.physicsBody?.applyForce(CGVector(dx: CGFloat(runAcceleration) * (player.physicsBody?.mass ?? 1), dy: 0))
+        }
+
         if !inspectMode && (!inAnimation || jumpableWallAnimation) && player.position.y > -1000 {
             if abs(player.position.x - cam.position.x) >= CGFloat(camInitiateFollowX) {
                 if player.position.x > cam.position.x {
@@ -453,6 +470,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 }
             }
         }
+        //if (!canMove)
+        
+        print(player.physicsBody?.velocity.dx)
+        
+        
         
         if (Double(rightLeg.physicsBody?.node?.zRotation ?? 0) > maxAngle) {
             direction = -1
@@ -460,16 +482,19 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         else if (Double(rightLeg.physicsBody?.node?.zRotation ?? 0) < -maxAngle) {
             direction = 1
         }
-        
+
         rightLeg?.physicsBody?.angularVelocity = CGFloat(direction) * abs((player.physicsBody?.velocity.dx)!) / CGFloat(legLength)
         
-        let correctionExpression = CGFloat(direction) * (rightLeg.physicsBody?.angularVelocity ?? 0) * correctionConstant
+        //legCenterPoint = player.position
         
-        rightLeg?.position.x = legCenterPoint.x + 0.5 * Double(legLength) * sin(Double((rightLeg.physicsBody?.node?.zRotation ?? 0) + correctionExpression))
-        rightLeg?.position.y = legCenterPoint.y + 0.5 * Double(legLength) * -cos(Double((rightLeg.physicsBody?.node?.zRotation ?? 0) + correctionExpression))
+        centerOfMass.position.x = legCenterPoint.x
+        centerOfMass.position.y = legCenterPoint.y
 
-        testPoint2.position.x = rightLeg.position.x
-        testPoint2.position.y = rightLeg.position.y
+//        testPoint2.position.x = rightLeg.position.x
+//        testPoint2.position.y = rightLeg.position.y
+        
+        print(cam.position.x)
+        print(cam.position.y)
         
         coinsLabel.position.x        = cam.position.x - 500
         coinsLabel.position.y        = cam.position.y + 250
@@ -561,6 +586,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         if player != nil && ground != nil {
             jumpNum = 0
+            touchingGround = true
         }
         else if enemy1 != nil && wall != nil {
             enemy1.physicsBody?.velocity.dx *= -1
@@ -630,6 +656,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     func didEnd(_ contact: SKPhysicsContact) {
         var player       : SKShapeNode!
         var jumpableWall : SKShapeNode!
+        var ground       : SKShapeNode!
         if contact.bodyA.categoryBitMask == playerCategory && contact.bodyB.categoryBitMask == jumpableWallCategory {
             player = contact.bodyA.node as? SKShapeNode
             jumpableWall = contact.bodyB.node as? SKShapeNode
@@ -638,11 +665,22 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             player = contact.bodyB.node as? SKShapeNode
             jumpableWall = contact.bodyA.node as? SKShapeNode
         }
+        else if contact.bodyA.categoryBitMask == playerCategory && contact.bodyB.categoryBitMask == groundCategory {
+            player = contact.bodyA.node as? SKShapeNode
+            ground = contact.bodyB.node as? SKShapeNode
+        }
+        else if contact.bodyA.categoryBitMask == groundCategory && contact.bodyB.categoryBitMask == playerCategory {
+            player = contact.bodyB.node as? SKShapeNode
+            ground = contact.bodyA.node as? SKShapeNode
+        }
         
         if (player != nil && jumpableWall != nil && jumpableWallAnimation) {
             initPlayer(fromBegining: false)
             jumpableWallAnimation = false
             inAnimation = false
+        }
+        else if (player != nil && ground != nil) {
+            touchingGround = false
         }
     }
     
@@ -721,8 +759,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             }
             canMove = false
             initPlayer(fromBegining: false)
-                jumpableWallAnimation = false
-                inAnimation = false
+            jumpableWallAnimation = false
+            inAnimation = false
+            //lastSpeed = player.physicsBody?.velocity.dx
             DispatchQueue.main.asyncAfter(deadline: .now() + timeToWait, execute: {
                 self.canMove = true
             })
