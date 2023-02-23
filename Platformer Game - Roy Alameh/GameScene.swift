@@ -150,7 +150,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var maxAngle : Double = Double.pi/4
     var direction         = 1
     var legLength         = 50
-    var armLength         = 100
+    var armLength         = 25
     var legCenterPoint    = CGPoint(x: 200, y: 400)
     var armCenterPoint    = CGPoint(x: 0, y: 500)
     var testPoint2 : SKShapeNode!
@@ -161,6 +161,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var centerOfMass: SKShapeNode!
     var joint2: SKPhysicsJoint!
     var centerOfMass2: SKShapeNode!
+    var joint3: SKPhysicsJoint!
+    var centerOfMass3: SKShapeNode!
+    var joint4: SKPhysicsJoint!
+    var centerOfMass4: SKShapeNode!
     
     var lastSpeed = 0
     
@@ -297,6 +301,65 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         joint2 = SKPhysicsJointFixed.joint(withBodyA: leftLeg.physicsBody!, bodyB: centerOfMass2.physicsBody!, anchor: leftLeg.position)
         
         self.physicsWorld.add(joint2)
+        
+        let armSize = CGSize(width: 7, height: armLength)
+        rightArm = SKShapeNode(rectOf: armSize)
+        rightArm.physicsBody = SKPhysicsBody(rectangleOf: armSize)
+        rightArm.physicsBody?.mass = 0.001
+        rightArm.position.x = 100
+        rightArm.position.y = 310
+        rightArm.physicsBody?.affectedByGravity = false
+        rightArm.physicsBody?.pinned = false
+        rightArm.physicsBody?.allowsRotation = true
+        rightArm.physicsBody?.categoryBitMask = 0
+        rightArm.physicsBody?.collisionBitMask = 0
+        
+        centerOfMass3 = SKShapeNode(circleOfRadius: 1)
+        centerOfMass3.physicsBody = SKPhysicsBody(circleOfRadius: 1)
+        centerOfMass3.position.x = rightArm.position.x
+        centerOfMass3.position.y = rightArm.position.y + CGFloat(armLength)/2
+        centerOfMass3.physicsBody?.mass = 10
+        centerOfMass3.physicsBody?.affectedByGravity = false
+        centerOfMass3.physicsBody?.pinned = false
+        centerOfMass3.physicsBody?.allowsRotation = true
+        centerOfMass3.physicsBody?.categoryBitMask = 0
+        centerOfMass3.physicsBody?.collisionBitMask = 0
+        
+        self.addChild(rightArm)
+        self.addChild(centerOfMass3)
+        
+        joint3 = SKPhysicsJointFixed.joint(withBodyA: rightArm.physicsBody!, bodyB: centerOfMass3.physicsBody!, anchor: rightArm.position)
+        
+        self.physicsWorld.add(joint3)
+        
+        leftArm = SKShapeNode(rectOf: armSize)
+        leftArm.physicsBody = SKPhysicsBody(rectangleOf: armSize)
+        leftArm.physicsBody?.mass = 0.001
+        leftArm.position.x = 100
+        leftArm.position.y = 310
+        leftArm.physicsBody?.affectedByGravity = false
+        leftArm.physicsBody?.pinned = false
+        leftArm.physicsBody?.allowsRotation = true
+        leftArm.physicsBody?.categoryBitMask = 0
+        leftArm.physicsBody?.collisionBitMask = 0
+        
+        centerOfMass4 = SKShapeNode(circleOfRadius: 1)
+        centerOfMass4.physicsBody = SKPhysicsBody(circleOfRadius: 1)
+        centerOfMass4.position.x = rightArm.position.x
+        centerOfMass4.position.y = rightArm.position.y + CGFloat(armLength)/2
+        centerOfMass4.physicsBody?.mass = 10
+        centerOfMass4.physicsBody?.affectedByGravity = false
+        centerOfMass4.physicsBody?.pinned = false
+        centerOfMass4.physicsBody?.allowsRotation = true
+        centerOfMass4.physicsBody?.categoryBitMask = 0
+        centerOfMass4.physicsBody?.collisionBitMask = 0
+        
+        self.addChild(leftArm)
+        self.addChild(centerOfMass4)
+        
+        joint4 = SKPhysicsJointFixed.joint(withBodyA: leftArm.physicsBody!, bodyB: centerOfMass4.physicsBody!, anchor: leftArm.position)
+        
+        self.physicsWorld.add(joint4)
         
         for i in 0..<coinPositions.count {
             let coin = SKShapeNode(circleOfRadius: CGFloat(coinRadius))
@@ -457,9 +520,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             else if moveLeft && (player.physicsBody?.velocity.dx)! > CGFloat(-runMaxSpeed) {
                 multiplier = -1
             }
-//            else {
-//                player.physicsBody?.velocity.dx = CGFloat(CGFloat(runMaxSpeed) * (player.physicsBody?.velocity.dx ?? 0)/abs(player.physicsBody?.velocity.dx ?? 0))
-//            }
             player?.physicsBody?.applyForce(CGVector(dx: CGFloat(multiplier * runAcceleration) * (player.physicsBody?.mass ?? 1), dy: 0))
         }
         else if ((player.physicsBody?.velocity.dx)! > 5 && touchingGround) {
@@ -500,9 +560,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 }
             }
         }
-        //if (!canMove)
-        
-        print(player.physicsBody?.velocity.dx)
         
         
         
@@ -515,22 +572,37 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
         centerOfMass?.physicsBody?.angularVelocity = CGFloat(direction) * abs((player.physicsBody?.velocity.dx)!) / CGFloat(legLength)
         centerOfMass2?.physicsBody?.angularVelocity = -CGFloat(direction) * abs((player.physicsBody?.velocity.dx)!) / CGFloat(legLength)
+        centerOfMass3?.physicsBody?.angularVelocity = centerOfMass.physicsBody!.angularVelocity
+        centerOfMass4?.physicsBody?.angularVelocity = centerOfMass2.physicsBody!.angularVelocity
         
         let distanceX = rightLeg.position.x - legCenterPoint.x
         let distanceY = rightLeg.position.y - legCenterPoint.y
+        let distanceXArm = rightArm.position.x - armCenterPoint.x
+        let distanceYArm = rightArm.position.y - armCenterPoint.y
         
         legCenterPoint = player.position
+        armCenterPoint = CGPoint(x: player.position.x, y: player.position.y + CGFloat(playerHeight/4))
+        
         centerOfMass.position.x = legCenterPoint.x
         centerOfMass.position.y = legCenterPoint.y
         rightLeg.position.x = centerOfMass.position.x + distanceX
         rightLeg.position.y = centerOfMass.position.y + distanceY
+        
         centerOfMass2.position.x = legCenterPoint.x
         centerOfMass2.position.y = legCenterPoint.y
         leftLeg.position.x = centerOfMass.position.x - distanceX
         leftLeg.position.y = centerOfMass.position.y + distanceY
         
-        print(cam.position.x)
-        print(cam.position.y)
+        centerOfMass3.position.x = armCenterPoint.x
+        centerOfMass3.position.y = armCenterPoint.y
+        rightArm.position.x = centerOfMass.position.x + distanceXArm
+        rightArm.position.y = centerOfMass.position.y + distanceYArm
+        
+        centerOfMass4.position.x = armCenterPoint.x
+        centerOfMass4.position.y = armCenterPoint.y
+        leftArm.position.x = centerOfMass.position.x - distanceXArm
+        leftArm.position.y = centerOfMass.position.y + distanceYArm
+
         
         coinsLabel.position.x        = cam.position.x - 500
         coinsLabel.position.y        = cam.position.y + 250
