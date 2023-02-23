@@ -45,7 +45,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     let enemy1Speed = 200
     
-    let playerWidth         = 100
+    let playerWidth         = 45
     let playerHeight        = 100
     let coinRadius          = 15
     let enemy1Size          = [30, 50]
@@ -146,8 +146,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var leftLeg     : SKShapeNode!
     var rightArm    : SKShapeNode!
     var leftArm     : SKShapeNode!
+    var torso       : SKShapeNode!
+    var head        : SKShapeNode!
     
-    var maxAngle : Double = Double.pi/4
+    var maxAngle : Double = Double.pi/8
     var direction         = 1
     var legLength         = 50
     var armLength         = 25
@@ -169,6 +171,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var lastSpeed = 0
     
     var touchingGround = false
+    
+    var angularVelocityFactor = 0.5
     
     
     override func sceneDidLoad() {
@@ -254,6 +258,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         rightLeg.physicsBody?.allowsRotation = true
         rightLeg.physicsBody?.categoryBitMask = 0
         rightLeg.physicsBody?.collisionBitMask = 0
+        rightLeg.fillColor = UIColor.gray
         
         centerOfMass = SKShapeNode(circleOfRadius: 1)
         centerOfMass.physicsBody = SKPhysicsBody(circleOfRadius: 1)
@@ -265,6 +270,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         centerOfMass.physicsBody?.allowsRotation = true
         centerOfMass.physicsBody?.categoryBitMask = 0
         centerOfMass.physicsBody?.collisionBitMask = 0
+        centerOfMass.isHidden = true
         
         self.addChild(rightLeg)
         self.addChild(centerOfMass)
@@ -283,6 +289,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         leftLeg.physicsBody?.allowsRotation = true
         leftLeg.physicsBody?.categoryBitMask = 0
         leftLeg.physicsBody?.collisionBitMask = 0
+        leftLeg.fillColor = UIColor.gray
         
         centerOfMass2 = SKShapeNode(circleOfRadius: 1)
         centerOfMass2.physicsBody = SKPhysicsBody(circleOfRadius: 1)
@@ -294,6 +301,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         centerOfMass2.physicsBody?.allowsRotation = true
         centerOfMass2.physicsBody?.categoryBitMask = 0
         centerOfMass2.physicsBody?.collisionBitMask = 0
+        centerOfMass2.isHidden = true
         
         self.addChild(leftLeg)
         self.addChild(centerOfMass2)
@@ -313,6 +321,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         rightArm.physicsBody?.allowsRotation = true
         rightArm.physicsBody?.categoryBitMask = 0
         rightArm.physicsBody?.collisionBitMask = 0
+        rightArm.fillColor = UIColor.gray
         
         centerOfMass3 = SKShapeNode(circleOfRadius: 1)
         centerOfMass3.physicsBody = SKPhysicsBody(circleOfRadius: 1)
@@ -324,6 +333,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         centerOfMass3.physicsBody?.allowsRotation = true
         centerOfMass3.physicsBody?.categoryBitMask = 0
         centerOfMass3.physicsBody?.collisionBitMask = 0
+        centerOfMass3.isHidden = true
         
         self.addChild(rightArm)
         self.addChild(centerOfMass3)
@@ -342,6 +352,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         leftArm.physicsBody?.allowsRotation = true
         leftArm.physicsBody?.categoryBitMask = 0
         leftArm.physicsBody?.collisionBitMask = 0
+        leftArm.fillColor = UIColor.gray
         
         centerOfMass4 = SKShapeNode(circleOfRadius: 1)
         centerOfMass4.physicsBody = SKPhysicsBody(circleOfRadius: 1)
@@ -353,6 +364,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         centerOfMass4.physicsBody?.allowsRotation = true
         centerOfMass4.physicsBody?.categoryBitMask = 0
         centerOfMass4.physicsBody?.collisionBitMask = 0
+        centerOfMass4.isHidden = true
         
         self.addChild(leftArm)
         self.addChild(centerOfMass4)
@@ -360,6 +372,27 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         joint4 = SKPhysicsJointFixed.joint(withBodyA: leftArm.physicsBody!, bodyB: centerOfMass4.physicsBody!, anchor: leftArm.position)
         
         self.physicsWorld.add(joint4)
+        
+        torso = SKShapeNode(rectOf: CGSize(width: 10, height: Int(Double(legLength) * 0.75)))
+        torso.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: 10, height: Int(Double(legLength) * 0.75)))
+        torso.physicsBody?.affectedByGravity = false
+        torso.physicsBody?.pinned = false
+        torso.physicsBody?.allowsRotation = false
+        torso.physicsBody?.categoryBitMask = 0
+        torso.physicsBody?.collisionBitMask = 0
+        torso.fillColor = UIColor.gray
+        
+        head = SKShapeNode(circleOfRadius: CGFloat(legLength) * 0.25)
+        head.physicsBody = SKPhysicsBody(circleOfRadius: CGFloat(legLength) * 0.25)
+        head.physicsBody?.affectedByGravity = false
+        head.physicsBody?.pinned = false
+        head.physicsBody?.allowsRotation = false
+        head.physicsBody?.categoryBitMask = 0
+        head.physicsBody?.collisionBitMask = 0
+        head.fillColor = UIColor.gray
+        
+        self.addChild(torso)
+        self.addChild(head)
         
         for i in 0..<coinPositions.count {
             let coin = SKShapeNode(circleOfRadius: CGFloat(coinRadius))
@@ -508,7 +541,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             firstInit = false
         }
         
-        player.isHidden = true
+        player.isHidden = false
     }
     
     override func update(_ currentTime: TimeInterval) {
@@ -562,7 +595,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
         
         
-        
         if (Double(rightLeg.physicsBody?.node?.zRotation ?? 0) > maxAngle) {
             direction = -1
         }
@@ -570,8 +602,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             direction = 1
         }
 
-        centerOfMass?.physicsBody?.angularVelocity = CGFloat(direction) * abs((player.physicsBody?.velocity.dx)!) / CGFloat(legLength)
-        centerOfMass2?.physicsBody?.angularVelocity = -CGFloat(direction) * abs((player.physicsBody?.velocity.dx)!) / CGFloat(legLength)
+        centerOfMass?.physicsBody?.angularVelocity = (CGFloat(direction) * abs((player.physicsBody?.velocity.dx)!) / CGFloat(legLength)) * angularVelocityFactor
+        centerOfMass2?.physicsBody?.angularVelocity = -centerOfMass.physicsBody!.angularVelocity
         centerOfMass3?.physicsBody?.angularVelocity = centerOfMass.physicsBody!.angularVelocity
         centerOfMass4?.physicsBody?.angularVelocity = centerOfMass2.physicsBody!.angularVelocity
         
@@ -595,13 +627,26 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         centerOfMass3.position.x = armCenterPoint.x
         centerOfMass3.position.y = armCenterPoint.y
-        rightArm.position.x = centerOfMass.position.x + distanceXArm
-        rightArm.position.y = centerOfMass.position.y + distanceYArm
-        
+        rightArm.position.x = centerOfMass3.position.x + distanceXArm
+        rightArm.position.y = centerOfMass3.position.y + distanceYArm
+//
         centerOfMass4.position.x = armCenterPoint.x
         centerOfMass4.position.y = armCenterPoint.y
-        leftArm.position.x = centerOfMass.position.x - distanceXArm
-        leftArm.position.y = centerOfMass.position.y + distanceYArm
+        leftArm.position.x = centerOfMass3.position.x - distanceXArm
+        leftArm.position.y = centerOfMass3.position.y + distanceYArm
+        
+        //try to better understand why the position AND angular velocity must be updated to account for delay?
+        
+//        rightArm.physicsBody?.applyForce(CGVector(dx: 0, dy: 9.81 * rightArm.physicsBody!.mass))
+//        leftArm.physicsBody?.applyForce(CGVector(dx: 0, dy: 9.81 * leftArm.physicsBody!.mass))
+        
+        rightArm.zRotation = rightLeg.zRotation
+        leftArm.zRotation = leftLeg.zRotation
+        
+        torso.position.x = player.position.x
+        torso.position.y = player.position.y + CGFloat(legLength) * 0.375
+        head.position.x = player.position.x
+        head.position.y = player.position.y + CGFloat(legLength) * 0.75
 
         
         coinsLabel.position.x        = cam.position.x - 500
