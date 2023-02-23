@@ -149,7 +149,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     var maxAngle : Double = Double.pi/4
     var direction         = 1
-    var legLength         = 250
+    var legLength         = 50
     var armLength         = 100
     var legCenterPoint    = CGPoint(x: 200, y: 400)
     var armCenterPoint    = CGPoint(x: 0, y: 500)
@@ -159,6 +159,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     var joint : SKPhysicsJoint!
     var centerOfMass: SKShapeNode!
+    var joint2: SKPhysicsJoint!
+    var centerOfMass2: SKShapeNode!
     
     var lastSpeed = 0
     
@@ -262,13 +264,39 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         self.addChild(rightLeg)
         self.addChild(centerOfMass)
-        var body = SKPhysicsBody(bodies: [rightLeg.physicsBody, centerOfMass.physicsBody] as! [SKPhysicsBody])
         
         joint = SKPhysicsJointFixed.joint(withBodyA: rightLeg.physicsBody!, bodyB: centerOfMass.physicsBody!, anchor: rightLeg.position)
         
-        
-        
         self.physicsWorld.add(joint)
+        
+        leftLeg = SKShapeNode(rectOf: legSize)
+        leftLeg.physicsBody = SKPhysicsBody(rectangleOf: legSize)
+        leftLeg.physicsBody?.mass = 0.001
+        leftLeg.position.x = 100
+        leftLeg.position.y = 310
+        leftLeg.physicsBody?.affectedByGravity = false
+        leftLeg.physicsBody?.pinned = false
+        leftLeg.physicsBody?.allowsRotation = true
+        leftLeg.physicsBody?.categoryBitMask = 0
+        leftLeg.physicsBody?.collisionBitMask = 0
+        
+        centerOfMass2 = SKShapeNode(circleOfRadius: 1)
+        centerOfMass2.physicsBody = SKPhysicsBody(circleOfRadius: 1)
+        centerOfMass2.position.x = rightLeg.position.x
+        centerOfMass2.position.y = rightLeg.position.y + CGFloat(legLength)/2
+        centerOfMass2.physicsBody?.mass = 10
+        centerOfMass2.physicsBody?.affectedByGravity = false
+        centerOfMass2.physicsBody?.pinned = false
+        centerOfMass2.physicsBody?.allowsRotation = true
+        centerOfMass2.physicsBody?.categoryBitMask = 0
+        centerOfMass2.physicsBody?.collisionBitMask = 0
+        
+        self.addChild(leftLeg)
+        self.addChild(centerOfMass2)
+        
+        joint2 = SKPhysicsJointFixed.joint(withBodyA: leftLeg.physicsBody!, bodyB: centerOfMass2.physicsBody!, anchor: leftLeg.position)
+        
+        self.physicsWorld.add(joint2)
         
         for i in 0..<coinPositions.count {
             let coin = SKShapeNode(circleOfRadius: CGFloat(coinRadius))
@@ -416,6 +444,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             self.addChild(player)
             firstInit = false
         }
+        
+        player.isHidden = true
     }
     
     override func update(_ currentTime: TimeInterval) {
@@ -483,15 +513,21 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             direction = 1
         }
 
-        rightLeg?.physicsBody?.angularVelocity = CGFloat(direction) * abs((player.physicsBody?.velocity.dx)!) / CGFloat(legLength)
+        centerOfMass?.physicsBody?.angularVelocity = CGFloat(direction) * abs((player.physicsBody?.velocity.dx)!) / CGFloat(legLength)
+        centerOfMass2?.physicsBody?.angularVelocity = -CGFloat(direction) * abs((player.physicsBody?.velocity.dx)!) / CGFloat(legLength)
         
-        //legCenterPoint = player.position
+        let distanceX = rightLeg.position.x - legCenterPoint.x
+        let distanceY = rightLeg.position.y - legCenterPoint.y
         
+        legCenterPoint = player.position
         centerOfMass.position.x = legCenterPoint.x
         centerOfMass.position.y = legCenterPoint.y
-
-//        testPoint2.position.x = rightLeg.position.x
-//        testPoint2.position.y = rightLeg.position.y
+        rightLeg.position.x = centerOfMass.position.x + distanceX
+        rightLeg.position.y = centerOfMass.position.y + distanceY
+        centerOfMass2.position.x = legCenterPoint.x
+        centerOfMass2.position.y = legCenterPoint.y
+        leftLeg.position.x = centerOfMass.position.x - distanceX
+        leftLeg.position.y = centerOfMass.position.y + distanceY
         
         print(cam.position.x)
         print(cam.position.y)
@@ -625,8 +661,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             player.physicsBody?.affectedByGravity = false
         }
         else if player != nil && levelEnd != nil {
-            print("test")
-            //end(won: true)
+            end(won: true)
         }
     }
     
