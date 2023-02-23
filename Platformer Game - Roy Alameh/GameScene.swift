@@ -27,7 +27,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var camInitiateFollowY = 150
     
     var playerStartX = 300
-    var playerStartY = 300
+    var playerStartY = 600
     
     let playerCategory         : UInt32 = 0x1 << 0
     let groundCategory         : UInt32 = 0x1 << 1
@@ -142,6 +142,20 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     let movementOutletSize = 250
     
+    var rightLeg    : SKShapeNode!
+    var leftLeg     : SKShapeNode!
+    var rightArm    : SKShapeNode!
+    var leftArm     : SKShapeNode!
+    
+    var maxAngle : Double = Double.pi/4
+    var direction         = 1
+    var legLength         = 250
+    var armLength         = 100
+    var legCenterPoint    = CGPoint(x: 200, y: 400)
+    var armCenterPoint    = CGPoint(x: 0, y: 500)
+    var testPoint2 : SKShapeNode!
+    
+    var correctionConstant = 0.0
     
     
     override func sceneDidLoad() {
@@ -360,6 +374,41 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             self.addChild(player)
             firstInit = false
         }
+        
+        let legSize = CGSize(width: 30, height: legLength)
+        rightLeg = SKShapeNode(rectOf: legSize)
+        rightLeg.physicsBody = SKPhysicsBody(rectangleOf: legSize)
+        rightLeg.physicsBody?.mass = 0
+        rightLeg.position.x = 100
+        rightLeg.position.y = 300
+        
+        var centerOfMass = SKShapeNode(circleOfRadius: 1)
+        centerOfMass.physicsBody = SKPhysicsBody(circleOfRadius: 1)
+        centerOfMass.position.x = rightLeg.position.x
+        centerOfMass.position.y = rightLeg.position.y + CGFloat(legLength)
+        centerOfMass.physicsBody?.mass = 1
+        
+        //rightLeg.physicsBody = SKPhysicsBody(bodies: [rightLeg.physicsBody, centerOfMass.physicsBody] as! [SKPhysicsBody])
+        
+        let joint = SKPhysicsJointFixed.joint(withBodyA: rightLeg.physicsBody!, bodyB: centerOfMass.physicsBody!, anchor: rightLeg.position)
+        
+        
+        rightLeg.position.x = 100
+        rightLeg.position.y = 300
+        
+        rightLeg.physicsBody?.affectedByGravity = false
+        rightLeg.physicsBody?.pinned = false
+        rightLeg.physicsBody?.allowsRotation = true
+//        var skActions = [SKAction.moveTo(x: 100, duration: 0), SKAction.moveTo(y: 300, duration: 0.01)]
+//        rightLeg.run(SKAction.repeatForever(SKAction.sequence(skActions)))
+        
+        var testPoint = SKShapeNode(circleOfRadius: 1)
+        testPoint.position = legCenterPoint
+        testPoint2 = SKShapeNode(circleOfRadius: 1)
+        self.addChild(rightLeg)
+        self.addChild(testPoint)
+        self.addChild(testPoint2)
+        
     }
     
     override func update(_ currentTime: TimeInterval) {
@@ -404,6 +453,23 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 }
             }
         }
+        
+        if (Double(rightLeg.physicsBody?.node?.zRotation ?? 0) > maxAngle) {
+            direction = -1
+        }
+        else if (Double(rightLeg.physicsBody?.node?.zRotation ?? 0) < -maxAngle) {
+            direction = 1
+        }
+        
+        rightLeg?.physicsBody?.angularVelocity = CGFloat(direction) * abs((player.physicsBody?.velocity.dx)!) / CGFloat(legLength)
+        
+        let correctionExpression = CGFloat(direction) * (rightLeg.physicsBody?.angularVelocity ?? 0) * correctionConstant
+        
+        rightLeg?.position.x = legCenterPoint.x + 0.5 * Double(legLength) * sin(Double((rightLeg.physicsBody?.node?.zRotation ?? 0) + correctionExpression))
+        rightLeg?.position.y = legCenterPoint.y + 0.5 * Double(legLength) * -cos(Double((rightLeg.physicsBody?.node?.zRotation ?? 0) + correctionExpression))
+
+        testPoint2.position.x = rightLeg.position.x
+        testPoint2.position.y = rightLeg.position.y
         
         coinsLabel.position.x        = cam.position.x - 500
         coinsLabel.position.y        = cam.position.y + 250
@@ -533,7 +599,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             player.physicsBody?.affectedByGravity = false
         }
         else if player != nil && levelEnd != nil {
-            end(won: true)
+            print("test")
+            //end(won: true)
         }
     }
     
