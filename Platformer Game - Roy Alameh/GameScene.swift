@@ -169,11 +169,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var centerOfMass4: SKShapeNode!
     
     var lastSpeed = 0
-    
     var touchingGround = false
-    
     var angularVelocityFactor = 0.5
-    
+    var armMultiplier = 2.0
     
     override func sceneDidLoad() {
         self.physicsWorld.contactDelegate = self
@@ -541,7 +539,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             firstInit = false
         }
         
-        player.isHidden = false
+        player.isHidden = true
     }
     
     override func update(_ currentTime: TimeInterval) {
@@ -640,8 +638,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 //        rightArm.physicsBody?.applyForce(CGVector(dx: 0, dy: 9.81 * rightArm.physicsBody!.mass))
 //        leftArm.physicsBody?.applyForce(CGVector(dx: 0, dy: 9.81 * leftArm.physicsBody!.mass))
         
-        rightArm.zRotation = rightLeg.zRotation
-        leftArm.zRotation = leftLeg.zRotation
+        rightArm.zRotation = rightLeg.zRotation// * armMultiplier
+        leftArm.zRotation = leftLeg.zRotation //* armMultiplier
         
         torso.position.x = player.position.x
         torso.position.y = player.position.y + CGFloat(legLength) * 0.375
